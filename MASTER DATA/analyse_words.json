@@ -1,0 +1,1471 @@
+{
+  "ADM": [
+    {
+      "fichier": "MP ADM.docx",
+      "nb_tableaux": 1,
+      "textes_cles": [
+        "Date et heure début : ..../.…/……        …..h…..                                                    Marché N°M0103/25                           Site :………………………….",
+        "Date et heure fin      : ..../.…/……        …..h…..",
+        "Référence : MP            Mois/          Année                                                                                                                             Nom du Technicien Substancium :…………………………………………..",
+        "Consistance des travaux :",
+        "Le contrôle et le maintien du bon état de fonctionnement des équipements et dispositifs,",
+        "Les mises au point nécessaires et le remplacement des pièces hors d’usage,",
+        "Le diagnostic des équipements si nécessaire,",
+        "l’identification des risques de dysfonctionnement et les améliorations liées à l’évolution du système",
+        "le nettoyage extérieur ; le dépoussiérage des différents équipements matériel des serveurs (LS) Péage et le nettoyage de tous lecteurs et périphériques en utilisant les produits appropriés.",
+        "Signature CLIENT :"
+      ],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "Désignation",
+              "Fabricant",
+              "Modèle",
+              "N° de série",
+              "Processeur",
+              "Composants – Mémoire en MB",
+              "Composants - Taille du disque dur C en MB",
+              "Composants - Taille du disque dur D en MB",
+              "Réseau - IP",
+              "Etat Software\n\nOK         Non",
+              "Etat Hardware \n\nOK         Non"
+            ],
+            [
+              "Serveur Principal",
+              "DELL",
+              "PowerEdge R320",
+              "",
+              "Intel(R) Xeon(R) CPU E5-2407 0 @ 2.20GHz",
+              "8 542",
+              "104 752",
+              "394 387",
+              ""
+            ],
+            [
+              "Serveur Redondant",
+              "DELL",
+              "PowerEdge R320",
+              "",
+              "Intel(R) Xeon(R) CPU E5-2407 0 @ 2.20GHz",
+              "8 542",
+              "104 752",
+              "394 387",
+              ""
+            ],
+            [
+              "Serveur Principal",
+              "DELL",
+              "PowerEdge R430",
+              "",
+              "Intel(R) Xeon(R) CPU E5-2640 v4 @ 2.40GHz",
+              "16 947",
+              "107 006",
+              "392 182",
+              ""
+            ],
+            [
+              "Serveur Redondant",
+              "DELL",
+              "PowerEdge R430",
+              "",
+              "Intel(R) Xeon(R) CPU E5-2640 v4 @ 2.40GHz",
+              "16 947",
+              "107 006",
+              "392 182",
+              ""
+            ],
+            [
+              "Serveur Principal",
+              "DELL",
+              "PowerEdge R440",
+              "",
+              "Intel(R) Xeon(R) Silver 4110 CPU @ 2.10GHz",
+              "16 850",
+              "125 461",
+              "473 719",
+              ""
+            ],
+            [
+              "Serveur Redondant",
+              "DELL",
+              "PowerEdge R440",
+              "",
+              "Intel(R) Xeon(R) Silver 4110 CPU @ 2.10GHz",
+              "16 850",
+              "125 461",
+              "473 719",
+              ""
+            ],
+            [
+              "Serveur Principal",
+              "DELL",
+              "PowerEdge R740",
+              "",
+              "Intel(R) Xeon(R) Silver 4110 CPU @ 2.10GHz",
+              "16 782",
+              "146 432",
+              "452 749",
+              ""
+            ],
+            [
+              "Serveur Redondant",
+              "DELL",
+              "PowerEdge R740",
+              "",
+              "Intel(R) Xeon(R) Silver 4110 CPU @ 2.10GHz",
+              "16 782",
+              "146 432",
+              "452 749",
+              ""
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "ANCFCC": [
+    {
+      "fichier": "Checklist ANCFCC 132 AGADIR.docx",
+      "nb_tableaux": 4,
+      "textes_cles": [],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "Client /\nMarché :",
+              "ANCFCC/  N°021/2024/ANCFCC/DLAG"
+            ],
+            [
+              "Date de l’intervention :",
+              "..…. /….. /………."
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "Nom du Technicien SUBSTANCIUM",
+              "Nom du Responsable"
+            ],
+            [
+              "Signature"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "Organisme",
+              "ANCFCC",
+              "Puissance de l’onduleur",
+              "…….. KVA"
+            ],
+            [
+              "Zone",
+              "SUD",
+              "Nombre des batteries",
+              ""
+            ],
+            [
+              "Ville",
+              "AGADIR",
+              "Marque/modèle",
+              "Riello 15 KVA"
+            ],
+            [
+              "Établissement",
+              "CADASTRE",
+              "Site",
+              ""
+            ],
+            [
+              "Établissement",
+              "CADASTRE",
+              "N° Série",
+              "LU53UT895900002"
+            ],
+            [
+              "Établissement",
+              "CADASTRE",
+              "C à B",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "fichier": "Checklist ANCFCC 132 BENGUERIR.docx",
+      "nb_tableaux": 4,
+      "textes_cles": [],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "Client /\nMarché :",
+              "ANCFCC/  N°021/2024/ANCFCC/DLAG"
+            ],
+            [
+              "Date de l’intervention :",
+              "..…. /….. /………."
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "Nom du Technicien SUBSTANCIUM",
+              "Nom du Responsable"
+            ],
+            [
+              "Signature"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "Organisme",
+              "ANCFCC",
+              "Puissance de l’onduleur",
+              "…….. KVA"
+            ],
+            [
+              "Zone",
+              "SUD",
+              "Nombre des batteries",
+              ""
+            ],
+            [
+              "Ville",
+              "BENGURIR",
+              "Marque/modèle",
+              "Riello 15 KVA"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "Site",
+              ""
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "N° Série",
+              "LN134T920420002"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "C à B",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "fichier": "Checklist ANCFCC 132 CAD KHEMISSAT.docx",
+      "nb_tableaux": 4,
+      "textes_cles": [],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "Client /\nMarché :",
+              "ANCFCC/  N°021/2024/ANCFCC/DLAG"
+            ],
+            [
+              "Date de l’intervention :",
+              "..…. /….. /………."
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "Nom du Technicien SUBSTANCIUM",
+              "Nom du Responsable"
+            ],
+            [
+              "Signature"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "Organisme",
+              "ANCFCC",
+              "Puissance de l’onduleur",
+              "…….. KVA"
+            ],
+            [
+              "Zone",
+              "Centre",
+              "Nombre des batteries",
+              ""
+            ],
+            [
+              "Ville",
+              "KHEMISSET",
+              "Marque/modèle",
+              "Riello 15 KVA"
+            ],
+            [
+              "Établissement",
+              "CADASTRE",
+              "Site",
+              ""
+            ],
+            [
+              "Établissement",
+              "CADASTRE",
+              "N° Série",
+              "LN28UT945140005"
+            ],
+            [
+              "Établissement",
+              "CADASTRE",
+              "C à B",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "fichier": "Checklist ANCFCC 132 KENITRA.docx",
+      "nb_tableaux": 4,
+      "textes_cles": [],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "Client /\nMarché :",
+              "ANCFCC/  N°021/2024/ANCFCC/DLAG"
+            ],
+            [
+              "Date de l’intervention :",
+              "..…. /….. /………."
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "Nom du Technicien SUBSTANCIUM",
+              "Nom du Responsable"
+            ],
+            [
+              "Signature"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "Organisme",
+              "ANCFCC",
+              "Puissance de l’onduleur",
+              "…….. KVA"
+            ],
+            [
+              "Zone",
+              "CENTRE",
+              "Nombre des batteries",
+              ""
+            ],
+            [
+              "Ville",
+              "KENITRA",
+              "Marque/modèle",
+              "Riello 10 KVA"
+            ],
+            [
+              "Établissement",
+              "CADASTRE",
+              "Site",
+              ""
+            ],
+            [
+              "Établissement",
+              "CADASTRE",
+              "N° Série",
+              "LN28UT945160004"
+            ],
+            [
+              "Établissement",
+              "CADASTRE",
+              "C à B",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "fichier": "Checklist ANCFCC 132 MDIEQ.docx",
+      "nb_tableaux": 4,
+      "textes_cles": [],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "Client /\nMarché :",
+              "ANCFCC/  N°021/2024/ANCFCC/DLAG"
+            ],
+            [
+              "Date de l’intervention :",
+              "..…. /….. /………."
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "Nom du Technicien SUBSTANCIUM",
+              "Nom du Responsable"
+            ],
+            [
+              "Signature"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "Organisme",
+              "ANCFCC",
+              "Puissance de l’onduleur",
+              "…….. KVA"
+            ],
+            [
+              "Zone",
+              "NORD",
+              "Nombre des batteries",
+              ""
+            ],
+            [
+              "Ville",
+              "MDIEQ",
+              "Marque/modèle",
+              "Riello 10 KVA"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "Site",
+              ""
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "N° Série",
+              "LN28UT845130007"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "C à B",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "fichier": "Checklist ANCFCC 132 MIDELT.docx",
+      "nb_tableaux": 4,
+      "textes_cles": [],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "Client /\nMarché :",
+              "ANCFCC/  N°021/2024/ANCFCC/DLAG"
+            ],
+            [
+              "Date de l’intervention :",
+              "..…. /….. /………."
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "Nom du Technicien SUBSTANCIUM",
+              "Nom du Responsable"
+            ],
+            [
+              "Signature"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "Organisme",
+              "ANCFCC",
+              "Puissance de l’onduleur",
+              "…….. KVA"
+            ],
+            [
+              "Zone",
+              "SUD",
+              "Nombre des batteries",
+              ""
+            ],
+            [
+              "Ville",
+              "MIDELT",
+              "Marque/modèle",
+              "Riello 10 KVA"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "Site",
+              ""
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "N° Série",
+              "LN28UT945130015"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "C à B",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "fichier": "Checklist ANCFCC 132 OUARZAZAT.docx",
+      "nb_tableaux": 4,
+      "textes_cles": [],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "Client /\nMarché :",
+              "ANCFCC/  N°021/2024/ANCFCC/DLAG"
+            ],
+            [
+              "Date de l’intervention :",
+              "..…. /….. /………."
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "Nom du Technicien SUBSTANCIUM",
+              "Nom du Responsable"
+            ],
+            [
+              "Signature"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "Organisme",
+              "ANCFCC",
+              "Puissance de l’onduleur",
+              "…….. KVA"
+            ],
+            [
+              "Zone",
+              "SUD",
+              "Nombre des batteries",
+              ""
+            ],
+            [
+              "Ville",
+              "OUARZAZATE",
+              "Marque/modèle",
+              "Riello 15 KVA"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "Site",
+              ""
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "N° Série",
+              "LN13UT920420010"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "C à B",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "fichier": "Checklist ANCFCC 132 ROMMANI.docx",
+      "nb_tableaux": 4,
+      "textes_cles": [],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "Client /\nMarché :",
+              "ANCFCC/  N°021/2024/ANCFCC/DLAG"
+            ],
+            [
+              "Date de l’intervention :",
+              "..…. /….. /………."
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "Nom du Technicien SUBSTANCIUM",
+              "Nom du Responsable"
+            ],
+            [
+              "Signature"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "Organisme",
+              "ANCFCC",
+              "Puissance de l’onduleur",
+              "…….. KVA"
+            ],
+            [
+              "Zone",
+              "Centre",
+              "Nombre des batteries",
+              ""
+            ],
+            [
+              "Ville",
+              "ROMMANI",
+              "Marque/modèle",
+              "Riello 15 KVA"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "Site",
+              ""
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "N° Série",
+              "LN22UT935850001"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "C à B",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "fichier": "Checklist ANCFCC 132 SALA EL JADIDA.docx",
+      "nb_tableaux": 4,
+      "textes_cles": [],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "Client /\nMarché :",
+              "ANCFCC/  N°021/2024/ANCFCC/DLAG"
+            ],
+            [
+              "Date de l’intervention :",
+              "..…. /….. /………."
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "Nom du Technicien SUBSTANCIUM",
+              "Nom du Responsable"
+            ],
+            [
+              "Signature"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "Organisme",
+              "ANCFCC",
+              "Puissance de l’onduleur",
+              "…….. KVA"
+            ],
+            [
+              "Zone",
+              "CENTRE",
+              "Nombre des batteries",
+              ""
+            ],
+            [
+              "Ville",
+              "SALA AL JADIDA",
+              "Marque/modèle",
+              "Riello 15 KVA"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "Site",
+              ""
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "N° Série",
+              "LN28UT945140015"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "C à B",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "fichier": "Checklist ANCFCC 132 SETTAT.docx",
+      "nb_tableaux": 4,
+      "textes_cles": [],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "Client /\nMarché :",
+              "ANCFCC/  N°021/2024/ANCFCC/DLAG"
+            ],
+            [
+              "Date de l’intervention :",
+              "..…. /….. /………."
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "Nom du Technicien SUBSTANCIUM",
+              "Nom du Responsable"
+            ],
+            [
+              "Signature"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "Organisme",
+              "ANCFCC",
+              "Puissance de l’onduleur",
+              "…….. KVA"
+            ],
+            [
+              "Zone",
+              "Centre",
+              "Nombre des batteries",
+              ""
+            ],
+            [
+              "Ville",
+              "SETTAT",
+              "Marque/modèle",
+              "Riello 15 KVA"
+            ],
+            [
+              "Établissement",
+              "CADASTRE",
+              "Site",
+              ""
+            ],
+            [
+              "Établissement",
+              "CADASTRE",
+              "N° Série",
+              "LN13UT920420006"
+            ],
+            [
+              "Établissement",
+              "CADASTRE",
+              "C à B",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "fichier": "Checklist ANCFCC 132 SIDI SLIMANE.docx",
+      "nb_tableaux": 4,
+      "textes_cles": [],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "Client /\nMarché :",
+              "ANCFCC/  N°021/2024/ANCFCC/DLAG"
+            ],
+            [
+              "Date de l’intervention :",
+              "..…. /….. /………."
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "Nom du Technicien SUBSTANCIUM",
+              "Nom du Responsable"
+            ],
+            [
+              "Signature"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "Organisme",
+              "ANCFCC",
+              "Puissance de l’onduleur",
+              "…….. KVA"
+            ],
+            [
+              "Zone",
+              "CENTRE",
+              "Nombre des batteries",
+              ""
+            ],
+            [
+              "Ville",
+              "SIDI SLIMANE",
+              "Marque/modèle",
+              "Riello 10 KVA"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "Site",
+              ""
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "N° Série",
+              "LN28UT945130005"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "C à B",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "fichier": "Checklist ANCFCC 132 TETOUAN.docx",
+      "nb_tableaux": 4,
+      "textes_cles": [],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "Client /\nMarché :",
+              "ANCFCC/  N°021/2024/ANCFCC/DLAG"
+            ],
+            [
+              "Date de l’intervention :",
+              "..…. /….. /………."
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "Nom du Technicien SUBSTANCIUM",
+              "Nom du Responsable"
+            ],
+            [
+              "Signature"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "Organisme",
+              "ANCFCC",
+              "Puissance de l’onduleur",
+              "…….. KVA"
+            ],
+            [
+              "Zone",
+              "NORD",
+              "Nombre des batteries",
+              ""
+            ],
+            [
+              "Ville",
+              "TETOUAN",
+              "Marque/modèle",
+              "Riello 15 KVA"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "Site",
+              ""
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "N° Série",
+              "LN28UT345140013"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "C à B",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "fichier": "Checklist ANCFCC 132SIDI BANNOUR.docx",
+      "nb_tableaux": 4,
+      "textes_cles": [],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "Client /\nMarché :",
+              "ANCFCC/  N°021/2024/ANCFCC/DLAG"
+            ],
+            [
+              "Date de l’intervention :",
+              "..…. /….. /………."
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "Nom du Technicien SUBSTANCIUM",
+              "Nom du Responsable"
+            ],
+            [
+              "Signature"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "Organisme",
+              "ANCFCC",
+              "Puissance de l’onduleur",
+              "…….. KVA"
+            ],
+            [
+              "Zone",
+              "CENTRE",
+              "Nombre des batteries",
+              ""
+            ],
+            [
+              "Ville",
+              "SIDI BENNOUR",
+              "Marque/modèle",
+              "Riello 15 KVA"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "Site",
+              ""
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "N° Série",
+              "LN10UT914930002"
+            ],
+            [
+              "Établissement",
+              "CONSERVATION",
+              "C à B",
+              ""
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "MHAI": [
+    {
+      "fichier": "Fiche préventive 27_11_2023 Imprimante + scanner.docx",
+      "nb_tableaux": 5,
+      "textes_cles": [
+        "Identité :",
+        "Marché :N°158/2022\t             Site : \t             \t \t\tBureau :\t\t  \tDate :",
+        "Identification du matériel :",
+        "Imprimante                                         Scanner",
+        "Opérations réalisées pour imprimante :",
+        "Opérations réalisées pour scanner :",
+        "Autres opérations / observation :",
+        "Signature :"
+      ],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "",
+              "Fiche Maintenance Préventive",
+              "MINISTÈRE DES HABOUS ET DES AFFAIRES ISLAMIQUES"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "Désignation",
+              "N° Série",
+              "N° Inventaire"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "N°",
+              "Opérations réalisées",
+              "OK"
+            ],
+            [
+              "1",
+              "Diagnostic du bon état de fonctionnement de l'équipement",
+              ""
+            ],
+            [
+              "2",
+              "Dépoussiérage interne et externe",
+              ""
+            ],
+            [
+              "3",
+              "Vérification des composants: rouleux, four, kit de transfer",
+              ""
+            ],
+            [
+              "4",
+              "Nettoyage extérieur en utilisant les produits appropriés",
+              ""
+            ],
+            [
+              "5",
+              "Test d’impression",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "fichier": "Fiche préventive 27_11_2023 PC Bureau.docx",
+      "nb_tableaux": 5,
+      "textes_cles": [
+        "Identité :",
+        "Marché : N°158/2022\t\t             Site : \t             \t \t\tBureau :\t\t  \tDate :",
+        "Identification du matériel :",
+        "Inventaire Matériel et état logiciels :",
+        "Opérations réalisées :",
+        "Autres opérations / observation :",
+        "Signature :"
+      ],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "",
+              "Fiche Maintenance Préventive",
+              "MINISTÈRE DES HABOUS ET DES AFFAIRES ISLAMIQUES"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "Ordinateur de bureau",
+              "Matériel",
+              "Désignation",
+              "N° Série",
+              "N° Inventaire"
+            ],
+            [
+              "Ordinateur de bureau",
+              "Matériel",
+              "Désignation",
+              "N° Série",
+              "N° Inventaire"
+            ],
+            [
+              "Ordinateur de bureau",
+              "Unité centrale",
+              ""
+            ],
+            [
+              "Ordinateur de bureau",
+              "Ecran",
+              ""
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "Composant",
+              "Détails",
+              "Observation"
+            ],
+            [
+              "Processeur",
+              ""
+            ],
+            [
+              "Ram",
+              ""
+            ],
+            [
+              "Disque dur",
+              ""
+            ],
+            [
+              "Systéme d’exploitation",
+              ""
+            ],
+            [
+              "Microsoft Office",
+              ""
+            ],
+            [
+              "Solution Antiviral",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "fichier": "Fiche préventive 27_11_2023 PC Portable.docx",
+      "nb_tableaux": 5,
+      "textes_cles": [
+        "Identité :",
+        "Marché : N°158/2022\t\t             Site : \t             \t \t\tBureau :\t\t  \tDate :",
+        "Identification du matériel :",
+        "Inventaire Matériel et état logiciels :",
+        "Opérations réalisées :",
+        "Autres opérations / observation :",
+        "Signature :"
+      ],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "",
+              "Fiche Maintenance Préventive",
+              "MINISTÈRE DES HABOUS ET DES AFFAIRES ISLAMIQUES"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "PC Portable",
+              "Désignation",
+              "N° Série",
+              "N° Inventaire"
+            ],
+            [
+              "PC Portable",
+              "Désignation",
+              "N° Série",
+              "N° Inventaire"
+            ],
+            [
+              "PC Portable",
+              ""
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "Composant",
+              "Détails",
+              "Observation"
+            ],
+            [
+              "Processeur",
+              ""
+            ],
+            [
+              "Ram",
+              ""
+            ],
+            [
+              "Disque dur",
+              ""
+            ],
+            [
+              "Systéme d’exploitation",
+              ""
+            ],
+            [
+              "Microsoft Office",
+              ""
+            ],
+            [
+              "Solution Antiviral",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "fichier": "Fiche préventive 27_11_2023 Serveur.docx",
+      "nb_tableaux": 5,
+      "textes_cles": [
+        "Identité :",
+        "Marché : N° 158/2022\t             Site : \t             \t \t\tBureau :\t\t  \tDate :",
+        "Identification du matériel :",
+        "Inventaire Matériel et état logiciels :",
+        "Opérations réalisées :",
+        "Autres opérations / observation :",
+        "Signature :"
+      ],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "",
+              "Fiche Maintenance Préventive",
+              "MINISTÈRE DES HABOUS ET DES AFFAIRES ISLAMIQUES"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "Serveur",
+              "Désignation",
+              "N° Série",
+              "N° Inventaire"
+            ],
+            [
+              "Serveur",
+              "Désignation",
+              "N° Série",
+              "N° Inventaire"
+            ],
+            [
+              "Serveur",
+              ""
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "Composant",
+              "Détails",
+              "Observation"
+            ],
+            [
+              "Processeur",
+              ""
+            ],
+            [
+              "Ram",
+              ""
+            ],
+            [
+              "Disque dur",
+              ""
+            ],
+            [
+              "Systéme d’exploitation",
+              ""
+            ],
+            [
+              "Microsoft Office",
+              ""
+            ],
+            [
+              "Solution Antiviral",
+              ""
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "fichier": "Fiche préventive SCANNER ET IMPRIMANTE INPPLC.docx",
+      "nb_tableaux": 5,
+      "textes_cles": [
+        "Identité :",
+        "Marché :\t\t             Site : \t             \t \t\tBureau :\t\t  \tDate :",
+        "Identification du matériel :",
+        "scanner                                               IMPRIMANTE",
+        "Opérations réalisées pour imprimante :",
+        "Opérations réalisées pour scanner :",
+        "Autres opérations / observation :",
+        "Signature :"
+      ],
+      "tableaux": [
+        {
+          "tableau_index": 0,
+          "lignes": [
+            [
+              "",
+              "Fiche Maintenance Préventive",
+              "INSTANCE NATIONALE DE LA PROBITÉ, DE LA PRÉVENTION\n ET DE LA LUTTE CONTRE LA CORRUPTION"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 1,
+          "lignes": [
+            [
+              "Désignation",
+              "N° Série",
+              "N° Inventaire"
+            ]
+          ]
+        },
+        {
+          "tableau_index": 2,
+          "lignes": [
+            [
+              "N°",
+              "Opérations réalisées",
+              "OK"
+            ],
+            [
+              "1",
+              "Diagnostic du bon état de fonctionnement de l'équipement",
+              ""
+            ],
+            [
+              "2",
+              "Dépoussiérage interne et externe",
+              ""
+            ],
+            [
+              "3",
+              "Vérification des composants: rouleux, four, kit de transfer",
+              ""
+            ],
+            [
+              "4",
+              "Nettoyage extérieur en utilisant les produits appropriés",
+              ""
+            ],
+            [
+              "5",
+              "Test d’impression",
+              ""
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

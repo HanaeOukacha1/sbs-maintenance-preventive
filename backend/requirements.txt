@@ -1,0 +1,34 @@
+# ============================================
+# FRAMEWORK WEB
+# ============================================
+fastapi==0.115.0          # Notre framework API principal
+uvicorn[standard]==0.30.6 # Serveur qui fait tourner FastAPI
+
+# ============================================
+# BASE DE DONNÉES MYSQL
+# ============================================
+sqlalchemy==2.0.35        # ORM : traduit Python → SQL automatiquement
+pymysql==1.1.1            # Driver de connexion Python → MySQL
+alembic==1.13.3           # Gestion des migrations de base de données
+
+# ============================================
+# SÉCURITÉ & AUTHENTIFICATION
+# ============================================
+python-jose[cryptography]==3.3.0  # Génération et validation des tokens JWT
+passlib[bcrypt]==1.7.4            # Hachage sécurisé des mots de passe (bcrypt)
+bcrypt==4.0.1                     # Fixé à 4.0.1 — passlib 1.7.4 incompatible avec bcrypt 4.1+
+
+# ============================================
+# VALIDATION & CONFIGURATION
+# ============================================
+pydantic==2.9.2           # Validation automatique des données (intégré à FastAPI)
+pydantic-settings==2.5.2  # Lecture du fichier .env avec Pydantic
+pydantic[email]==2.9.2    # Validation des adresses email (EmailStr)
+email-validator==2.2.0    # Bibliothèque sous-jacente pour valider les emails
+python-dotenv==1.0.1      # Chargement des variables d'environnement
+
+# ============================================
+# UTILITAIRES
+# ============================================
+python-multipart==0.0.12  # Pour recevoir des fichiers (import JSON Schema)
+httpx==0.27.2             # Client HTTP pour les tests
