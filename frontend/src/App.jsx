@@ -6,6 +6,7 @@ import Users from './pages/Users';
 import Sites from './pages/Sites';
 import Equipements from './pages/Equipements';
 import Missions from './pages/Missions';
+import Rapports from './pages/Rapports';
 import Schemas from './pages/Schemas';
 import SettingsPage from './pages/Settings';
 import Layout from './components/Layout';
@@ -91,6 +92,17 @@ const App = () => {
             <RequireAuth>
               <Layout>
                 <Missions />
+              </Layout>
+            </RequireAuth>
+          } 
+        />
+
+        <Route 
+          path="/rapports" 
+          element={
+            <RequireAuth>
+              <Layout>
+                <Rapports />
               </Layout>
             </RequireAuth>
           } 

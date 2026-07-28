@@ -30,16 +30,33 @@ def create_equipement(data: EquipementCreate, db: Session = Depends(get_db), _=D
 
 
 @router.get("/", response_model=List[EquipementResponse])
-def list_equipements(site_id: int | None = None, db: Session = Depends(get_db), _=Depends(all_roles)):
+def list_equipements(
+    site_id: int | None = None,
+    sous_site: str | None = None,
+    q: str | None = None,
+    limit: int = 500,
+    db: Session = Depends(get_db),
+    _=Depends(all_roles),
+):
     """
-    Lister les équipements (filtrable par site).
-    Utilisé par le mobile lors de la synchronisation initiale
-    pour télécharger l'inventaire du site cible.
+    Lister les équipements — filtrable par site, sous_site, et recherche textuelle (q).
+    Utilisé par le mobile lors de la synchronisation matinale.
     """
     query = db.query(Equipement).filter(Equipement.is_active == True)
     if site_id:
         query = query.filter(Equipement.site_id == site_id)
-    return query.all()
+    if sous_site:
+        query = query.filter(Equipement.sous_site == sous_site)
+    if q:
+        like = f"%{q}%"
+        query = query.filter(
+            Equipement.numero_serie.ilike(like) |
+            Equipement.designation.ilike(like) |
+            Equipement.nom.ilike(like) |
+            Equipement.marque.ilike(like) |
+            Equipement.modele.ilike(like)
+        )
+    return query.limit(limit).all()
 
 
 @router.get("/{equipement_id}", response_model=EquipementResponse)

@@ -23,7 +23,7 @@ const Sites = () => {
   // Modale Site
   const [isSiteModalOpen, setIsSiteModalOpen] = useState(false);
   const [isSubmittingSite, setIsSubmittingSite] = useState(false);
-  const [siteData, setSiteData] = useState({ nom: '', marche_id: '', ville: '', adresse: '' });
+  const [siteData, setSiteData] = useState({ nom: '', marche_id: '', ville: '', checklist_type: '' });
   const [siteErrors, setSiteErrors] = useState({});
   const [siteGlobalError, setSiteGlobalError] = useState('');
 
@@ -106,10 +106,11 @@ const Sites = () => {
       setSiteGlobalError('');
       const response = await api.post('/sites/', {
         ...siteData,
-        marche_id: parseInt(siteData.marche_id)
+        marche_id: parseInt(siteData.marche_id),
+        checklist_type: siteData.checklist_type || null,
       });
       setSites([...sites, response.data]);
-      setSiteData({ nom: '', marche_id: '', ville: '', adresse: '' });
+      setSiteData({ nom: '', marche_id: '', ville: '', checklist_type: '' });
       setIsSiteModalOpen(false);
     } catch (error) {
       setSiteGlobalError(error.response?.data?.detail || "Erreur lors de la création.");
@@ -131,7 +132,7 @@ const Sites = () => {
         
         {/* Colonne de gauche : Liste des Marchés */}
         <div className="master-column">
-          <div className="card h-full flex-col">
+          <div className="card h-full d-flex flex-col">
             <div className="p-4 border-bottom">
               <div className="d-flex justify-between items-center mb-3">
                 <h2 className="text-h2" style={{ margin: 0, fontSize: '1.1rem' }}>Marchés ({marches.length})</h2>
@@ -176,7 +177,7 @@ const Sites = () => {
                       </div>
                       <div className="marche-info">
                         <div className="marche-name">{marche.nom}</div>
-                        <div className="marche-desc">{marche.description || 'Aucune description'}</div>
+                        <div className="marche-desc">Client: {marche.client || '—'}</div>
                       </div>
                     </div>
                     <ChevronRight size={18} className="chevron" />
@@ -190,20 +191,22 @@ const Sites = () => {
         {/* Colonne de droite : Détails du marché et ses sites */}
         <div className="detail-column">
           {selectedMarche ? (
-            <div className="card h-full flex-col animate-fade-in">
+            <div className="card h-full d-flex flex-col animate-fade-in">
               {/* Header du marché sélectionné */}
               <div className="p-4 border-bottom" style={{ backgroundColor: '#f8fafc', borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }}>
                 <div className="d-flex justify-between items-center">
                   <div>
                     <span className="badge cyan mb-2">Marché Sélectionné</span>
                     <h2 className="text-h1" style={{ marginBottom: '0.25rem' }}>{selectedMarche.nom}</h2>
-                    <p className="text-muted">{selectedMarche.description || 'Aucune description'}</p>
+                    {selectedMarche.description && (
+                      <p className="text-muted">{selectedMarche.description}</p>
+                    )}
                   </div>
                 </div>
               </div>
 
               {/* Liste des sites */}
-              <div className="p-4 flex-1">
+              <div className="p-4 flex-1 d-flex flex-col" style={{ minHeight: 0 }}>
                 <div className="d-flex justify-between items-center mb-4">
                   <h3 className="text-h3 d-flex items-center gap-2">
                     <MapPin size={18} className="text-muted" />
@@ -212,7 +215,7 @@ const Sites = () => {
                   
                   <div className="d-flex gap-3">
                     <div className="search-zone" style={{ width: '250px' }}>
-                      <Search size={16} className="search-icon text-muted" style={{ left: '10px' }} />
+                      <Search size={16} className="search-icon text-muted" />
                       <input 
                         type="text" 
                         placeholder="Filtrer les sites..." 
@@ -235,13 +238,13 @@ const Sites = () => {
                   </div>
                 </div>
 
-                <div className="table-container" style={{ border: '1px solid var(--border-light)', borderRadius: '8px' }}>
-                  <table className="table">
+                <div className="table-container" style={{ border: '1px solid var(--border-light)', borderRadius: '8px', flex: 1, overflowY: 'auto' }}>
+                  <table className="table" style={{ margin: 0 }}>
                     <thead>
                       <tr>
                         <th>Nom du Site</th>
                         <th>Ville</th>
-                        <th>Adresse</th>
+                        <th>Type Checklist</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -252,7 +255,7 @@ const Sites = () => {
                           <tr key={site.id}>
                             <td style={{ fontWeight: 500, color: 'var(--text-dark)' }}>{site.nom}</td>
                             <td>{site.ville || '-'}</td>
-                            <td className="text-muted">{site.adresse || '-'}</td>
+                            <td>{site.checklist_type ? <span className="badge cyan" style={{ fontSize: '0.7rem' }}>{site.checklist_type}</span> : <span className="text-muted">—</span>}</td>
                           </tr>
                         ))
                       )}
@@ -487,15 +490,16 @@ const Sites = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Adresse détaillée (Optionnel)</label>
-            <textarea 
-              className="form-input" 
-              rows="2"
-              value={siteData.adresse} 
-              onChange={(e) => setSiteData({...siteData, adresse: e.target.value})}
-              placeholder="Rue, Quartier, Bâtiment..."
-            ></textarea>
+            <label className="form-label">Type de Checklist</label>
+            <select className="form-input" value={siteData.checklist_type} onChange={e => setSiteData({...siteData, checklist_type: e.target.value})}>
+              <option value="">-- Auto-détecté --</option>
+              {['ADM','AMEE_MARRAKECH','AMEE_RABAT','ANCFCC','ANP','AOH','INPPLC','MARSA_MAROC','MHAI','MSANTE_STANDARD','MSANTE_CAPM','MSANTE_DPRF','ONP','CNDH_G1','CNDH_G2','CNDH_SIEGE'].map(t => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
           </div>
+
+
 
           <div className="d-flex justify-end gap-2 mt-4 pt-4 border-top">
             <button type="button" className="btn btn-secondary" onClick={() => setIsSiteModalOpen(false)}>Annuler</button>

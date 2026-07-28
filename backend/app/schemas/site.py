@@ -1,23 +1,29 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional, List, Any
+from app.models.site import ChecklistTypeEnum
 
 
 class SiteCreate(BaseModel):
     """Données pour créer un site"""
     nom: str
-    marche_id: int          # Obligatoire : à quel marché appartient ce site
-    adresse: str | None = None
-    ville: str | None = None
-    description: str | None = None
+    marche_id: int
+    adresse: Optional[str] = None
+    ville: Optional[str] = None
+    description: Optional[str] = None
+    checklist_type: Optional[ChecklistTypeEnum] = None
+    feuilles: Optional[List[str]] = None   # ex: ["PC", "MàJ Windows", "Imp & MFP", "Data Center"]
 
 
 class SiteUpdate(BaseModel):
     """Données modifiables"""
-    nom: str | None = None
-    adresse: str | None = None
-    ville: str | None = None
-    description: str | None = None
-    is_active: bool | None = None
+    nom: Optional[str] = None
+    adresse: Optional[str] = None
+    ville: Optional[str] = None
+    description: Optional[str] = None
+    is_active: Optional[bool] = None
+    checklist_type: Optional[ChecklistTypeEnum] = None
+    feuilles: Optional[List[str]] = None
 
 
 class SiteResponse(BaseModel):
@@ -25,11 +31,13 @@ class SiteResponse(BaseModel):
     id: int
     nom: str
     marche_id: int
-    adresse: str | None = None
-    ville: str | None = None
-    description: str | None = None
+    adresse: Optional[str] = None
+    ville: Optional[str] = None
+    description: Optional[str] = None
     is_active: bool
-    created_at: datetime | None = None
+    checklist_type: Optional[ChecklistTypeEnum] = None
+    feuilles: Optional[List[str]] = None
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

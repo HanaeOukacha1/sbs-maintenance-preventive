@@ -7,54 +7,71 @@ from app.db.database import Base
 class Intervention(Base):
     """
     Table 'interventions' — Résultats d'un audit sur un équipement.
-    Chaque intervention = le technicien a rempli un formulaire
+
+    Chaque intervention = le technicien a rempli la fiche
     pour UN équipement dans le cadre d'UNE mission.
 
-    Les réponses sont stockées en JSON (type JSON de MySQL).
-    sync_en_attente : flag qui indique si les données ont été
-    remontées vers le serveur après la saisie hors-ligne.
+    Les réponses sont stockées en JSON flexible pour s'adapter
+    à tous les canevas (ADM, ANCFCC, AMEE, etc.).
     """
     __tablename__ = "interventions"
 
     id = Column(Integer, primary_key=True, index=True)
 
-    # -------------------------------------------------------
+    # ------------------------------------------------------------------
     # CLÉS ÉTRANGÈRES
-    # -------------------------------------------------------
-    # Mission dans laquelle s'inscrit cette intervention
+    # ------------------------------------------------------------------
     mission_id = Column(Integer, ForeignKey("missions.id"), nullable=False)
-
-    # Équipement audité (peut être None si équipement non répertorié)
     equipement_id = Column(Integer, ForeignKey("equipements.id"), nullable=True)
-
-    # Schéma JSON utilisé pour générer le formulaire
     json_schema_id = Column(Integer, ForeignKey("json_schemas.id"), nullable=True)
 
-    # -------------------------------------------------------
-    # DONNÉES DE L'AUDIT
-    # -------------------------------------------------------
-    # Réponses du technicien au formulaire — stockées en JSON
-    # Ex: {"temperature": "OK", "ventilation": "Défaillante", ...}
+    # ------------------------------------------------------------------
+    # FEUILLE / ONGLET
+    # Pour les sites multi-feuilles (ex: "PC", "Serveurs", "SIEGE")
+    # ------------------------------------------------------------------
+    feuille = Column(String(100), nullable=True)
+
+    # ------------------------------------------------------------------
+    # DONNÉES DE L'AUDIT — JSON flexible
+    # Adapté à chaque marché :
+    # ADM     → {"etat_software": "OK", "etat_hardware": "Non"}
+    # ANCFCC  → {"points": [{"num": 1, "reponse": "oui", "obs": "..."}, ...]}
+    # Standard→ {"observation": "BON"} ou {"etat": "OK"}
+    # AMEE MàJ→ {"nettoyage_disque": "OK", "fichiers_temp": "OK", "maj_windows": "OK"}
+    # ------------------------------------------------------------------
     reponses = Column(JSON, nullable=True)
 
     # Observations libres du technicien
     observations = Column(Text, nullable=True)
 
-    # Équipement non répertorié dans l'inventaire ? (ajout sur site)
+    # ------------------------------------------------------------------
+    # ÉQUIPEMENT HORS-INVENTAIRE (ajouté sur site par le technicien)
+    # ------------------------------------------------------------------
     est_hors_inventaire = Column(Boolean, default=False)
+    # Données de l'équipement ajouté sur site (JSON)
+    equipement_hors_inventaire = Column(JSON, nullable=True)
+    # Ex: {"designation": "UC", "marque": "HP", "modele": "ProDesk", "numero_serie": "ABC123"}
 
-    # Numéro de série saisi par le technicien sur site
-    numero_serie_saisi = Column(String(150), nullable=True)
+    # ------------------------------------------------------------------
+    # SIGNATURES (base64)
+    # ------------------------------------------------------------------
+    signature_technicien = Column(Text, nullable=True)
+    signature_client = Column(Text, nullable=True)
+    signature_utilisateur = Column(Text, nullable=True)  # MSANTE CAPM : signature de l'utilisateur de l'équipement
 
-    # -------------------------------------------------------
-    # SYNCHRONISATION OFFLINE → ONLINE
-    # -------------------------------------------------------
-    # True  = données saisies hors-ligne, pas encore envoyées au serveur
-    # False = données confirmées par le serveur (synchronisation terminée)
-    sync_en_attente = Column(Boolean, default=False)
-
-    # Date de clôture de l'intervention sur mobile
+    # ------------------------------------------------------------------
+    # HORODATAGE DE L'INTERVENTION
+    # ------------------------------------------------------------------
+    heure_debut = Column(DateTime(timezone=True), nullable=True)
+    heure_fin = Column(DateTime(timezone=True), nullable=True)
     date_intervention = Column(DateTime(timezone=True), nullable=True)
+
+    # ------------------------------------------------------------------
+    # SYNCHRONISATION OFFLINE → ONLINE
+    # True  = données saisies hors-ligne, pas encore envoyées au serveur
+    # False = données confirmées par le serveur
+    # ------------------------------------------------------------------
+    sync_en_attente = Column(Boolean, default=False)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -64,4 +81,4 @@ class Intervention(Base):
     equipement = relationship("Equipement")
 
     def __repr__(self):
-        return f"<Intervention Mission:{self.mission_id} Equip:{self.equipement_id} sync:{self.sync_en_attente}>"
+        return f"<Intervention Mission:{self.mission_id} Equip:{self.equipement_id} Feuille:{self.feuille}>"

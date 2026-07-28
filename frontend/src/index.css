@@ -274,6 +274,15 @@ input, select, textarea {
 /* ========================================================
    MODALES (Pop-ups)
    ======================================================== */
+.search-zone {
+  position: relative;
+}
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
 .modal-overlay {
   position: fixed;
   top: 0;

@@ -19,19 +19,21 @@ const Layout = ({ children }) => {
           </div>
 
           <div className="user-zone d-flex items-center gap-4">
-            <button className="notification-btn position-relative">
+            <button className="notification-btn position-relative" onClick={() => alert("Aucune nouvelle notification.")}>
               <Bell size={20} className="text-muted" />
               <span className="notification-dot"></span>
             </button>
             
-            <div className="user-profile d-flex items-center gap-3">
+            <div 
+              className="user-profile d-flex items-center gap-3" 
+              style={{ cursor: 'pointer' }}
+              onClick={() => alert("Paramètres du profil (à venir)")}
+            >
               <div className="text-right d-none d-md-block">
                 <div className="user-name">{user?.prenom} {user?.nom}</div>
                 <div className="user-role">{user?.role === 'ADMIN' ? 'Administrateur Principal' : 'Superviseur'}</div>
               </div>
-              {/* Photo de profil simulée / avatar */}
               <div className="avatar">
-                {/* On pourrait mettre une vraie image ici via <img> */}
                 <div className="avatar-placeholder">
                   {user?.prenom?.charAt(0)}{user?.nom?.charAt(0)}
                 </div>
@@ -76,6 +78,8 @@ const Layout = ({ children }) => {
         .search-icon {
           position: absolute;
           left: 12px;
+          top: 50%;
+          transform: translateY(-50%);
         }
 
         .search-input {

@@ -1,184 +1,204 @@
 import React, { useState, useEffect } from 'react';
-import { Monitor, Search, Filter, Cpu, Download } from 'lucide-react';
+import { Monitor, Search, MapPin, Tag, Layers } from 'lucide-react';
 import api from '../services/api';
+
+const TYPE_COLORS = {
+  SERVEUR:      { bg: '#ede9fe', color: '#7c3aed' },
+  PC:           { bg: '#e0f2fe', color: '#0284c7' },
+  PORTABLE:     { bg: '#dbeafe', color: '#1d4ed8' },
+  IMPRIMANTE:   { bg: '#fef3c7', color: '#d97706' },
+  ECRAN:        { bg: '#f0fdf4', color: '#16a34a' },
+  ONDULEUR:     { bg: '#fee2e2', color: '#dc2626' },
+  SCANNER:      { bg: '#fce7f3', color: '#be185d' },
+  PHOTOCOPIEUR: { bg: '#fef9c3', color: '#ca8a04' },
+  FAX:          { bg: '#e0e7ff', color: '#4338ca' },
+  AIO:          { bg: '#d1fae5', color: '#059669' },
+  AUTRE:        { bg: '#f1f5f9', color: '#64748b' },
+};
 
 const Equipements = () => {
   const [equipements, setEquipements] = useState([]);
+  const [sites, setSites] = useState({});
+  const [marches, setMarches] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
-  
-  // Limite fixée pour ne pas saturer le navigateur avec les 7800 équipements
-  // Dans un vrai cas de production, on ferait une pagination côté serveur (skip/limit)
-  const LIMIT = 500;
-
-  const fetchEquipements = async () => {
-    try {
-      setIsLoading(true);
-      const response = await api.get(`/equipements/?limit=${LIMIT}`);
-      setEquipements(response.data);
-    } catch (error) {
-      console.error("Erreur lors de la récupération des équipements:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [marcheFilter, setMarcheFilter] = useState('');
+  const [marchesList, setMarchesList] = useState([]);
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 100;
 
   useEffect(() => {
-    fetchEquipements();
+    const fetchAll = async () => {
+      try {
+        setIsLoading(true);
+        const [resEq, resSites, resMarches] = await Promise.all([
+          api.get('/equipements/?limit=500'),
+          api.get('/sites/'),
+          api.get('/marches/'),
+        ]);
+        setEquipements(resEq.data);
+
+        // Map id → objet pour lookup rapide
+        const sitesMap = {};
+        resSites.data.forEach(s => { sitesMap[s.id] = s; });
+        setSites(sitesMap);
+
+        const marchesMap = {};
+        resSites.data.forEach(s => {
+          marchesMap[s.id] = resMarches.data.find(m => m.id === s.marche_id);
+        });
+        setMarches(marchesMap);
+        setMarchesList(resMarches.data);
+      } catch (e) {
+        console.error("Erreur lors de la récupération des équipements:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchAll();
   }, []);
 
-  // Recherche multicritères
-  const filteredEquipements = equipements.filter(eq => {
-    // Filtre texte
-    const searchLower = searchTerm.toLowerCase();
-    const matchText = 
-      (eq.nom && eq.nom.toLowerCase().includes(searchLower)) ||
-      (eq.numero_serie && eq.numero_serie.toLowerCase().includes(searchLower)) ||
-      (eq.marque && eq.marque.toLowerCase().includes(searchLower));
-      
-    // Filtre par type
-    const matchType = typeFilter === '' || eq.type_equipement === typeFilter;
+  console.log("Équipements chargés:", equipements.length, "Sites:", Object.keys(sites).length);
 
-    return matchText && matchType;
+  const filtered = equipements.filter(eq => {
+    const q = searchTerm.toLowerCase();
+    const matchText = !searchTerm || (
+      String(eq.numero_serie || '').toLowerCase().includes(q) ||
+      String(eq.nom || '').toLowerCase().includes(q) ||
+      String(eq.marque || '').toLowerCase().includes(q) ||
+      String(eq.designation || '').toLowerCase().includes(q) ||
+      String(eq.modele || '').toLowerCase().includes(q)
+    );
+    const matchType = !typeFilter || eq.type_equipement === typeFilter;
+    const site = sites[eq.site_id];
+    const marche = site ? marches[eq.site_id] : null;
+    const matchMarche = !marcheFilter || (marche && String(marche.id) === marcheFilter);
+    return matchText && matchType && matchMarche;
   });
+
+  const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
 
   return (
     <div className="page-wrapper">
-      {/* En-tête de page */}
       <div className="d-flex justify-between items-center mb-4">
         <div>
           <h1 className="text-h1">Parc Équipements</h1>
-          <p className="text-muted">Inventaire global des équipements audités sur l'ensemble des sites.</p>
-        </div>
-        <div className="d-flex gap-2">
-          <button className="btn btn-secondary">
-            <Download size={16} /> Exporter (Excel)
-          </button>
+          <p className="text-muted">Inventaire de {equipements.length.toLocaleString()} équipements sur {Object.keys(sites).length} sites.</p>
         </div>
       </div>
 
-      {/* Barre d'outils */}
-      <div className="card p-4 mb-4 d-flex justify-between items-center">
-        <div className="search-zone" style={{ width: '400px' }}>
-          <Search size={18} className="search-icon text-muted" />
-          <input 
-            type="text" 
-            placeholder="Rechercher par N° Série, Marque ou Modèle..." 
-            className="form-input" 
-            style={{ paddingLeft: '2.5rem' }}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        
-        <div className="d-flex items-center gap-3">
-          <div className="form-group" style={{ marginBottom: 0 }}>
-            <select 
-              className="form-input" 
-              style={{ padding: '0.4rem 2rem 0.4rem 1rem' }}
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-            >
-              <option value="">Tous les types</option>
-              <option value="SERVEUR">Serveur</option>
-              <option value="PC">PC Bureau</option>
-              <option value="PORTABLE">PC Portable</option>
-              <option value="ONDULEUR">Onduleur</option>
-              <option value="BAIE_BRASSAGE">Baie de brassage</option>
-              <option value="IMPRIMANTE">Imprimante</option>
-              <option value="ECRAN">Écran</option>
-              <option value="SCANNER">Scanner</option>
-              <option value="AUTRE">Autre</option>
-            </select>
+      {/* Filtres */}
+      <div className="card p-4 mb-4">
+        <div className="d-flex gap-3 items-center" style={{ flexWrap: 'wrap' }}>
+          <div className="search-zone" style={{ flex: 1, minWidth: 250 }}>
+            <Search size={18} className="search-icon text-muted" />
+            <input
+              type="text"
+              placeholder="N° Série, Désignation, Marque, Modèle..."
+              className="form-input"
+              style={{ paddingLeft: '2.5rem' }}
+              value={searchTerm}
+              onChange={e => { setSearchTerm(e.target.value); setPage(0); }}
+            />
           </div>
-          <span className="badge gray">
-            Affichage des {filteredEquipements.length} résultats
-          </span>
+
+          <select className="form-input" style={{ width: 180 }} value={marcheFilter} onChange={e => { setMarcheFilter(e.target.value); setPage(0); }}>
+            <option value="">Tous les marchés</option>
+            {marchesList.map(m => <option key={m.id} value={m.id}>{m.nom}</option>)}
+          </select>
+
+          <select className="form-input" style={{ width: 160 }} value={typeFilter} onChange={e => { setTypeFilter(e.target.value); setPage(0); }}>
+            <option value="">Tous les types</option>
+            {Object.keys(TYPE_COLORS).map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+
+          <span className="badge gray">{filtered.length} résultat{filtered.length > 1 ? 's' : ''}</span>
         </div>
       </div>
 
-      {/* Tableau des équipements */}
+      {/* Tableau */}
       <div className="card">
-        <div className="table-container" style={{ maxHeight: 'calc(100vh - 280px)', overflowY: 'auto' }}>
+        <div className="table-container" style={{ maxHeight: 'calc(100vh - 320px)', overflowY: 'auto' }}>
           <table className="table">
             <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
               <tr>
                 <th>Type</th>
-                <th>Désignation</th>
+                <th>Désignation / Nom</th>
                 <th>Marque & Modèle</th>
                 <th>N° Série</th>
-                <th>Site (ID)</th>
+                <th>Site</th>
+                <th>Marché</th>
+                <th>Sous-site</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
-                <tr><td colSpan="5" className="text-center py-4 text-muted">Chargement de l'inventaire...</td></tr>
-              ) : filteredEquipements.length === 0 ? (
-                <tr><td colSpan="5" className="text-center py-4 text-muted">Aucun équipement trouvé.</td></tr>
-              ) : (
-                filteredEquipements.map((eq) => (
+                <tr><td colSpan="7" className="text-center py-4 text-muted">Chargement...</td></tr>
+              ) : paged.length === 0 ? (
+                <tr><td colSpan="7" className="text-center py-4 text-muted">Aucun équipement trouvé.</td></tr>
+              ) : paged.map(eq => {
+                const typeStyle = TYPE_COLORS[eq.type_equipement] || TYPE_COLORS.AUTRE;
+                const site = sites[eq.site_id];
+                const marche = site ? marches[eq.site_id] : null;
+                return (
                   <tr key={eq.id}>
                     <td>
-                      <div className="d-flex items-center gap-2">
-                        <div className="type-icon">
-                          {eq.type_equipement === 'SERVEUR' ? <Cpu size={14} /> : <Monitor size={14} />}
-                        </div>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-muted)' }}>
-                          {eq.type_equipement}
-                        </span>
-                      </div>
+                      <span className="badge" style={{ backgroundColor: typeStyle.bg, color: typeStyle.color, fontSize: '0.75rem' }}>
+                        {eq.type_equipement}
+                      </span>
                     </td>
                     <td style={{ fontWeight: 500, color: 'var(--text-dark)' }}>
-                      {eq.nom || 'Non défini'}
+                      {eq.designation || eq.famille || eq.nom || '—'}
                     </td>
                     <td>
-                      <div>{eq.marque || '-'}</div>
+                      <div>{eq.marque || '—'}</div>
                       <div className="text-muted" style={{ fontSize: '0.75rem' }}>{eq.modele || ''}</div>
                     </td>
                     <td>
-                      <span className="badge gray" style={{ fontFamily: 'monospace' }}>
+                      <span style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                         {eq.numero_serie || 'N/A'}
                       </span>
                     </td>
                     <td>
-                      <span className="badge cyan">Site #{eq.site_id}</span>
+                      <div className="d-flex items-center gap-1">
+                        <MapPin size={12} className="text-muted" />
+                        <span style={{ fontSize: '0.85rem' }}>{site?.nom || `Site #${eq.site_id}`}</span>
+                      </div>
+                    </td>
+                    <td>
+                      {marche ? (
+                        <span className="badge cyan" style={{ fontSize: '0.75rem' }}>{marche.nom}</span>
+                      ) : '—'}
+                    </td>
+                    <td className="text-muted" style={{ fontSize: '0.8rem' }}>
+                      {eq.sous_site || '—'}
                     </td>
                   </tr>
-                ))
-              )}
+                );
+              })}
             </tbody>
           </table>
         </div>
-      </div>
 
-      <style>{`
-        .type-icon {
-          width: 24px;
-          height: 24px;
-          border-radius: 4px;
-          background-color: var(--primary-light);
-          color: var(--primary);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        
-        .table-container::-webkit-scrollbar {
-          width: 8px;
-          height: 8px;
-        }
-        .table-container::-webkit-scrollbar-track {
-          background: #f1f5f9; 
-        }
-        .table-container::-webkit-scrollbar-thumb {
-          background: #cbd5e1; 
-          border-radius: 4px;
-        }
-        .table-container::-webkit-scrollbar-thumb:hover {
-          background: #94a3b8; 
-        }
-      `}</style>
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="d-flex justify-between items-center p-3" style={{ borderTop: '1px solid var(--border-light)' }}>
+            <span className="text-muted" style={{ fontSize: '0.85rem' }}>
+              Page {page + 1} / {totalPages} ({filtered.length} résultats)
+            </span>
+            <div className="d-flex gap-2">
+              <button className="btn btn-secondary" onClick={() => setPage(p => Math.max(0, p - 1))} disabled={page === 0}>
+                ← Précédent
+              </button>
+              <button className="btn btn-secondary" onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={page >= totalPages - 1}>
+                Suivant →
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

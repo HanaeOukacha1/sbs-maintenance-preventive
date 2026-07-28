@@ -8,7 +8,6 @@ from app.db.database import Base
 class StatutMissionEnum(str, enum.Enum):
     """Cycle de vie d'une mission"""
     PLANIFIEE = "PLANIFIEE"       # Créée par le superviseur, pas encore démarrée
-    EN_COURS = "EN_COURS"         # Le technicien a commencé l'audit
     TERMINEE = "TERMINEE"         # Audit clôturé sur le mobile
     SYNCHRONISEE = "SYNCHRONISEE" # Données remontées vers le serveur
 

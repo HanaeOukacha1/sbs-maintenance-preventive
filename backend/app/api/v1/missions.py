@@ -154,3 +154,44 @@ def supprimer_mission(
     db.delete(mission)
     db.commit()
     return {"message": f"Mission '{mission.titre}' supprimée avec succès."}
+
+
+@router.get("/{mission_id}/export")
+def exporter_rapport_mission(
+    mission_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(RoleEnum.ADMIN, RoleEnum.SUPERVISEUR))
+):
+    from fastapi.responses import StreamingResponse
+    from app.services.export_service import exporter_mission
+    from app.models.intervention import Intervention
+    from app.models.equipement import Equipement
+
+    mission = db.query(Mission).filter(Mission.id == mission_id).first()
+    if not mission:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Mission avec l'id {mission_id} introuvable."
+        )
+
+    interventions = db.query(Intervention).filter(Intervention.mission_id == mission_id).all()
+    if not interventions:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Impossible d'exporter : aucune intervention pour cette mission."
+        )
+
+    equipements = db.query(Equipement).filter(Equipement.site_id == mission.site_id).all()
+
+    try:
+        buffer, mime_type, filename = exporter_mission(mission, interventions, equipements)
+        return StreamingResponse(
+            buffer,
+            media_type=mime_type,
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de la génération de l'export: {str(e)}"
+        )

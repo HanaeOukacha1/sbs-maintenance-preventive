@@ -10,8 +10,29 @@ import { Collapsible } from '@/components/ui/collapsible';
 import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { Button, View, Text, Alert } from 'react-native';
+import { Link } from 'expo-router';
+import syncService from '../services/syncService';
+import db from '../services/dbService'; // Pour vérifier le contenu
+
+
 
 export default function TabTwoScreen() {
+  const testerSynchronisation = async () => {
+    console.log("👆 Bouton 'Lancer la Synchronisation' cliqué !");
+    try {
+      await syncService.downloadMorningData();
+      Alert.alert("Succès", "Synchronisation terminée !");
+      const missionsLocales = db.getAllSync('SELECT * FROM missions');
+      const schemasLocaux = db.getAllSync('SELECT * FROM json_schemas');
+      console.log("🧐 CONTENU SQLITE - Missions :", missionsLocales);
+      console.log("🧐 CONTENU SQLITE - Schemas :", schemasLocaux);
+    } catch (error) {
+      Alert.alert("Erreur", "La synchronisation a échoué.");
+      console.error(error);
+    }
+  };
+
   const safeAreaInsets = useSafeAreaInsets();
   const insets = {
     ...safeAreaInsets,
@@ -39,7 +60,14 @@ export default function TabTwoScreen() {
       contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}>
       <ThemedView style={styles.container}>
         <ThemedView style={styles.titleContainer}>
-          <ThemedText type="subtitle">Explore</ThemedText>
+          <ThemedText type="subtitle">Mode Technicien</ThemedText>
+          <Button
+            title="📥 Lancer la Synchronisation Matinale"
+            onPress={testerSynchronisation}
+          />
+          <Link href="/form-test" asChild>
+            <Button title="🧪 Tester le Formulaire Dynamique" color="#10b981" />
+          </Link>
           <ThemedText style={styles.centerText} themeColor="textSecondary">
             This starter app includes example{'\n'}code to help you get started.
           </ThemedText>

@@ -74,19 +74,22 @@ def soumettre_intervention(
         mission_id=payload.mission_id,
         equipement_id=payload.equipement_id,
         json_schema_id=payload.json_schema_id,
+        feuille=payload.feuille,
         reponses=payload.reponses,
         observations=payload.observations,
         est_hors_inventaire=payload.est_hors_inventaire,
-        numero_serie_saisi=payload.numero_serie_saisi,
+        equipement_hors_inventaire=payload.equipement_hors_inventaire,
+        numero_serie_saisi=getattr(payload, 'numero_serie_saisi', None),
+        signature_technicien=payload.signature_technicien,
+        signature_client=payload.signature_client,
+        signature_utilisateur=payload.signature_utilisateur,
+        heure_debut=payload.heure_debut,
+        heure_fin=payload.heure_fin,
         date_intervention=payload.date_intervention,
-        sync_en_attente=False  # Reçu par le serveur, donc n'est plus en attente
+        sync_en_attente=False
     )
     db.add(intervention)
-    
-    # Si c'est la première intervention, on peut passer la mission à EN_COURS
-    if mission.statut == StatutMissionEnum.PLANIFIEE:
-        mission.statut = StatutMissionEnum.EN_COURS
-        
+
     db.commit()
     db.refresh(intervention)
     return intervention

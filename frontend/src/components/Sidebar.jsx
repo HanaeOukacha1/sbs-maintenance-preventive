@@ -5,8 +5,8 @@ import {
   MapPin, 
   Monitor, 
   Users, 
-  Briefcase, 
-  FileJson, 
+  Briefcase,
+  ClipboardList,
   LogOut, 
   Settings
 } from 'lucide-react';
@@ -21,12 +21,12 @@ const Sidebar = () => {
   };
 
   const navItems = [
-    { name: 'Tableau de Bord', path: '/', icon: <LayoutDashboard size={20} /> },
-    { name: 'Sites & Marchés', path: '/sites', icon: <MapPin size={20} /> },
-    { name: 'Équipements', path: '/equipements', icon: <Monitor size={20} /> },
-    { name: 'Missions', path: '/missions', icon: <Briefcase size={20} /> },
-    { name: 'Utilisateurs', path: '/users', icon: <Users size={20} /> },
-    { name: 'Schémas', path: '/schemas', icon: <FileJson size={20} /> },
+    { name: 'Tableau de Bord',      path: '/',           icon: <LayoutDashboard size={20} /> },
+    { name: 'Sites & Marchés',      path: '/sites',      icon: <MapPin size={20} /> },
+    { name: 'Équipements',          path: '/equipements',icon: <Monitor size={20} /> },
+    { name: 'Missions',             path: '/missions',   icon: <Briefcase size={20} /> },
+    { name: 'Rapports',             path: '/rapports',   icon: <ClipboardList size={20} /> },
+    { name: 'Utilisateurs',         path: '/users',      icon: <Users size={20} /> },
   ];
 
   return (
