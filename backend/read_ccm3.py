@@ -1,0 +1,13 @@
+import openpyxl
+import sys
+
+sys.stdout.reconfigure(encoding='utf-8')
+
+wb = openpyxl.load_workbook(r'C:\Users\hanae\Desktop\Stage PFA 2026\MASTER DATA\MSANTE\CCM S2.xlsx')
+for sheet in wb.sheetnames:
+    ws = wb[sheet]
+    print(f"Sheet: {sheet}")
+    for row in ws.iter_rows(values_only=True):
+        non_empty = [str(x) for x in row if x is not None]
+        if non_empty:
+            print(non_empty)

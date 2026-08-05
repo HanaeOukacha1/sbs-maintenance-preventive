@@ -155,6 +155,13 @@ export const initDB = () => {
       try { db.execSync(sql); } catch (_) { /* colonne existe déjà */ }
     }
 
+    // Migration pour ajouter la colonne observations aux anciennes bases locales
+    try {
+      db.execSync("ALTER TABLE interventions ADD COLUMN observations TEXT;");
+    } catch (e) {
+      // La colonne existe probablement déjà
+    }
+
     console.log('✅ SQLite initialisé');
   } catch (error) {
     console.error('❌ Erreur SQLite init:', error);

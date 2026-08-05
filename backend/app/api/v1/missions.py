@@ -26,7 +26,7 @@ def liste_missions(
     """
     Retourne la liste des missions.
     - Si ADMIN/SUPERVISEUR : voit toutes les missions
-    - Si TECHNICIEN : voit uniquement SES missions assignées
+    - Si TECHNICIEN : voit uniquement SES missions assignÃ©es
     """
     query = db.query(Mission)
     
@@ -45,7 +45,7 @@ def creer_mission(
     current_user: User = Depends(require_role(RoleEnum.ADMIN, RoleEnum.SUPERVISEUR))
 ):
     """
-    Crée une nouvelle mission (Planification).
+    CrÃ©e une nouvelle mission (Planification).
     Accessible par : ADMIN, SUPERVISEUR
     """
     mission = Mission(
@@ -63,6 +63,33 @@ def creer_mission(
     return mission
 
 
+from app.models.site import Site
+from app.models.equipement import Equipement
+
+@router.get("/sync-data")
+def get_sync_data(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # 1. Missions
+    missions_query = db.query(Mission)
+    if current_user.role == RoleEnum.TECHNICIEN:
+        missions_query = missions_query.filter(Mission.technicien_id == current_user.id)
+    missions = missions_query.all()
+    
+    # 2. Sites concernés
+    site_ids = list(set([m.site_id for m in missions if m.site_id]))
+    sites = db.query(Site).filter(Site.id.in_(site_ids)).all() if site_ids else []
+    
+    # 3. Équipements de ces sites
+    equipements = db.query(Equipement).filter(Equipement.site_id.in_(site_ids)).all() if site_ids else []
+    
+    return {
+        "missions": missions,
+        "sites": sites,
+        "equipements": equipements
+    }
+
 @router.get("/{mission_id}", response_model=MissionResponse)
 def get_mission(
     mission_id: int,
@@ -70,8 +97,8 @@ def get_mission(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Récupère une mission par son ID.
-    - TECHNICIEN : Ne peut voir que si ça lui est assigné
+    RÃ©cupÃ¨re une mission par son ID.
+    - TECHNICIEN : Ne peut voir que si Ã§a lui est assignÃ©
     """
     mission = db.query(Mission).filter(Mission.id == mission_id).first()
     if not mission:
@@ -83,7 +110,7 @@ def get_mission(
     if current_user.role == RoleEnum.TECHNICIEN and mission.technicien_id != current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Accès refusé. Cette mission ne vous est pas assignée."
+            detail="AccÃ¨s refusÃ©. Cette mission ne vous est pas assignÃ©e."
         )
 
     return mission
@@ -111,12 +138,12 @@ def modifier_mission(
 
     update_data = payload.model_dump(exclude_unset=True)
 
-    # Vérification des droits si c'est un TECHNICIEN
+    # VÃ©rification des droits si c'est un TECHNICIEN
     if current_user.role == RoleEnum.TECHNICIEN:
         if mission.technicien_id != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Accès refusé."
+                detail="AccÃ¨s refusÃ©."
             )
         # Le technicien ne peut changer QUE le statut
         keys = list(update_data.keys())
@@ -141,7 +168,7 @@ def supprimer_mission(
     current_user: User = Depends(require_role(RoleEnum.ADMIN, RoleEnum.SUPERVISEUR))
 ):
     """
-    Supprime définitivement une mission.
+    Supprime dÃ©finitivement une mission.
     Accessible par : ADMIN, SUPERVISEUR
     """
     mission = db.query(Mission).filter(Mission.id == mission_id).first()
@@ -153,14 +180,14 @@ def supprimer_mission(
 
     db.delete(mission)
     db.commit()
-    return {"message": f"Mission '{mission.titre}' supprimée avec succès."}
+    return {"message": f"Mission '{mission.titre}' supprimÃ©e avec succÃ¨s."}
 
 
 @router.get("/{mission_id}/export")
 def exporter_rapport_mission(
     mission_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role(RoleEnum.ADMIN, RoleEnum.SUPERVISEUR))
+    current_user: User = Depends(require_role(RoleEnum.ADMIN, RoleEnum.SUPERVISEUR, RoleEnum.TECHNICIEN))
 ):
     from fastapi.responses import StreamingResponse
     from app.services.export_service import exporter_mission
@@ -193,5 +220,10 @@ def exporter_rapport_mission(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erreur lors de la génération de l'export: {str(e)}"
+            detail=f"Erreur lors de la gÃ©nÃ©ration de l'export: {str(e)}"
         )
+
+
+
+
+

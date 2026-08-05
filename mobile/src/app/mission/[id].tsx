@@ -6,11 +6,13 @@ import {
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import {
   ArrowLeft, Search, Plus, CheckCircle2, XCircle,
-  ChevronRight, Layers,
+  ChevronRight, Layers, Download,
 } from 'lucide-react-native';
 import db from '../../services/dbService';
 import syncService from '../../services/syncService';
 import api from '../../services/api';
+import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 import FicheInterventionModal from '../../components/FicheInterventionModal';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -52,15 +54,15 @@ const CHECKLIST_FIELDS: Record<string, string[]> = {
 
 const ANCFCC_POINTS = [
   'Vérification du matériel',
-  'Contrôle des paramètres électriques en entrée/sortie',
-  'Contrôle du bruit des composants mécaniques',
-  'Test de simulation (batteries, by-pass...)',
-  'Vérification carte SNMP et communication à distance',
+  'Contrôle des différents paramètres électriques en entrée/sortie',
+  'Contrôle du bruit des différents composants mécaniques',
+  'Test de simulation de fonctionnement du matériel (sur batteries, by-pass...)',
+  'Vérification de la carte SNMP et la communication à distance',
   "Contrôle de l'ensemble des batteries",
   'Réparation de tout défaut constaté si nécessaire',
-  'Ouvrir un incident (maintenance curative) si panne',
+  'Ouvrir un incident (maintenance curative), en cas de panne matériel, en vue de : a. Réparation de tout défaut constaté b. Remplacement de tout composant reconnu défectueux pendant la visite',
   'Nettoyage et dépoussiérage',
-  "Rédaction d'un rapport de synthèse",
+  "Rédaction d'un rapport de synthèse à l'issue de la visite",
 ];
 
 // ─── Composant principal ───────────────────────────────────────────────────────
@@ -98,11 +100,12 @@ export default function MissionDetailScreen() {
   // ── Charger équipements selon feuille active ──
   useEffect(() => {
     if (!mission) return;
+    const checklistType = mission.checklist_type || '';
     let sql = 'SELECT * FROM equipements WHERE site_id = ?';
     const params: any[] = [mission.site_id];
 
     if (feuilleActive) {
-      sql += ' AND (sous_site = ? OR sous_site IS NULL)';
+      sql += ' AND sous_site = ?';
       params.push(feuilleActive);
     }
     sql += ' ORDER BY id ASC';
@@ -208,22 +211,89 @@ export default function MissionDetailScreen() {
         >
           <Text style={styles.saveBtnText}>{mission.statut === 'TERMINEE' ? 'Clôturée' : 'Clôturer'}</Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.saveBtn, { backgroundColor: '#10b981', marginLeft: 4 }]}
+          onPress={async () => {
+            try {
+              // Charger tous les équipements du site
+              const eqs = db.getAllSync('SELECT * FROM equipements WHERE site_id = ?', [mission.site_id]) as any[];
+              // Charger les interventions locales
+              const interventions = db.getAllSync('SELECT * FROM interventions WHERE mission_id = ?', [mission.id]) as any[];
+              const interventionMap: Record<number, any> = {};
+              interventions.forEach((i: any) => {
+                try { interventionMap[i.equipement_id] = JSON.parse(i.reponses || '{}'); } catch {}
+              });
+
+              // Construire le CSV
+              const escape = (v: any) => '"' + String(v || '').replace(/"/g, '""') + '"';
+              const headers = ['N°', 'Désignation', 'Marque', 'Modèle', 'N° Série', 'Sous-site', 'État', 'Notes', 'Vérifié'];
+              const lines = [headers.map(escape).join(';')];
+
+              eqs.forEach((eq: any) => {
+                const rep = interventionMap[eq.id] || {};
+                const eqMod = rep.equipement_modifie || {};
+                lines.push([
+                  escape(eq.id),
+                  escape(eqMod.designation || eq.designation || eq.famille || eq.type_equipement || ''),
+                  escape(eqMod.marque || eq.marque || ''),
+                  escape(eqMod.modele || eq.modele || ''),
+                  escape(eqMod.numero_serie || eq.numero_serie || ''),
+                  escape(eq.sous_site || ''),
+                  escape(rep.etat_msante || rep.observation || rep.etat || rep.statut || ''),
+                  escape(rep.notes || ''),
+                  escape(Object.keys(rep).length > 0 ? 'OUI' : 'NON'),
+                ].join(';'));
+              });
+
+              const csvContent = '\uFEFF' + lines.join('\n'); // BOM UTF-8 pour Excel
+              const fileUri = FileSystem.documentDirectory + 'Rapport_' + mission.site_nom.replace(/\s/g, '_') + '.csv';
+              await FileSystem.writeAsStringAsync(fileUri, csvContent, { encoding: 'utf8' as any });
+
+              if (await Sharing.isAvailableAsync()) {
+                await Sharing.shareAsync(fileUri, { mimeType: 'text/csv', dialogTitle: 'Rapport CSV - Ouvrir avec Excel' });
+              } else {
+                Alert.alert('Succès', 'Fichier CSV généré.');
+              }
+            } catch(e: any) {
+              Alert.alert('Erreur', 'Génération échouée : ' + e?.message);
+            }
+          }}
+        >
+          <Download color="#fff" size={16} />
+          <Text style={[styles.saveBtnText, { fontSize: 12 }]}> Excel</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Onglets feuilles (si multi-feuilles) */}
       {feuilles.length > 1 && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabBar} contentContainerStyle={styles.tabBarContent}>
-          {feuilles.map(f => (
-            <TouchableOpacity
-              key={f}
-              style={[styles.tab, feuilleActive === f && styles.tabActive]}
-              onPress={() => setFeuilleActive(f)}
-            >
-              <Layers color={feuilleActive === f ? '#22b5d8' : '#64748b'} size={14} />
-              <Text style={[styles.tabText, feuilleActive === f && styles.tabTextActive]}>{f}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        <View style={{ backgroundColor: '#f8fafc', borderBottomWidth: 1, borderBottomColor: '#e2e8f0', height: 52 }}>
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            style={{ flex: 1 }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 8, gap: 8 }}>
+              {feuilles.map(f => (
+                <TouchableOpacity
+                  key={f}
+                  onPress={() => setFeuilleActive(f)}
+                  style={{
+                    paddingHorizontal: 14,
+                    paddingVertical: 7,
+                    borderRadius: 16,
+                    backgroundColor: feuilleActive === f ? '#0ea5e9' : '#e2e8f0',
+                  }}
+                >
+                  <Text style={{
+                    fontSize: 12,
+                    fontWeight: '700',
+                    color: feuilleActive === f ? '#ffffff' : '#0f172a',
+                  }}>{f || '?'}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
+        </View>
       )}
 
       {/* Barre de recherche */}
@@ -275,8 +345,14 @@ export default function MissionDetailScreen() {
           </View>
         )}
         
-        {filteredEquipements.map((eq: any) => {
+        {filteredEquipements.map((eq: any, idx: number) => {
           const isDone = eq.saved_reponses && Object.keys(eq.saved_reponses).length > 0;
+          const eqMod = eq.saved_reponses?.equipement_modifie || {};
+          const desig = eqMod.designation || eq.designation || eq.famille || eq.type_equipement || 'Équipement inconnu';
+          const marque = eqMod.marque || eq.marque || '';
+          const modele = eqMod.modele || eq.modele || '';
+          const nom = eq.nom ? eq.nom : (`${marque} ${modele}`.trim() || 'Nom / Modèle inconnu');
+          
           return (
             <TouchableOpacity 
               key={eq.id} 
@@ -286,10 +362,8 @@ export default function MissionDetailScreen() {
               <View style={styles.eqItemLeft}>
                 <View style={[styles.statusDot, isDone ? styles.statusDotDone : styles.statusDotPending]} />
                 <View>
-                  <Text style={styles.eqItemDesig}>{eq.designation || eq.famille || eq.type_equipement}</Text>
-                  <Text style={styles.eqItemNom}>
-                    {eq.nom ? eq.nom : (`${eq.marque || ''} ${eq.modele || ''}`.trim() || 'Nom / Modèle inconnu')}
-                  </Text>
+                  <Text style={styles.eqItemDesig}>{idx + 1}. {desig}</Text>
+                  <Text style={styles.eqItemNom}>{nom}</Text>
                   {eq.numero_serie ? <Text style={styles.eqItemMeta}>S/N: {eq.numero_serie}</Text> : null}
                   {eq.affectation || eq.utilisateur_nom ? <Text style={styles.eqItemMeta}>👤 {eq.affectation || eq.utilisateur_nom}</Text> : null}
                 </View>
@@ -299,11 +373,15 @@ export default function MissionDetailScreen() {
           );
         })}
         
+
         {filteredEquipements.length === 0 && search.length === 0 && (
           <View style={styles.empty}>
             <Text style={styles.emptyText}>Aucun équipement pour cette feuille.</Text>
           </View>
         )}
+
+
+
       </ScrollView>
 
       {/* Modal Fiche d'intervention */}
@@ -339,15 +417,17 @@ const styles = StyleSheet.create({
   },
   saveBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
 
-  tabBar: { backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#e2e8f0' },
-  tabBarContent: { paddingHorizontal: 12, paddingVertical: 10, gap: 8, alignItems: 'center' },
+  tabBar: { backgroundColor: '#0f172a', borderBottomWidth: 1, borderBottomColor: '#1e293b' },
+  tabBarContent: { paddingHorizontal: 8, paddingVertical: 8, gap: 6, alignItems: 'center', flexDirection: 'row' },
   tab: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8,
+    paddingHorizontal: 14, paddingVertical: 9, borderRadius: 20,
+    backgroundColor: '#1e293b',
+    borderWidth: 1, borderColor: '#334155',
   },
-  tabActive: { backgroundColor: '#e0f9ff' },
-  tabText: { fontSize: 13, color: '#64748b', fontWeight: '500' },
-  tabTextActive: { color: '#22b5d8', fontWeight: '700' },
+  tabActive: { backgroundColor: '#22b5d8', borderColor: '#22b5d8' },
+  tabText: { fontSize: 12, color: '#ffffff', fontWeight: '600' },
+  tabTextActive: { color: '#ffffff', fontWeight: '800' },
 
   searchBar: {
     flexDirection: 'row', alignItems: 'center', gap: 10,

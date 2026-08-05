@@ -1,67 +1,58 @@
-import os
 import sys
-from datetime import date
+import os
+from datetime import datetime, timedelta
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Add backend to path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from app.db.database import SessionLocal
-from app.models import User, RoleEnum, Site, Mission, StatutMissionEnum
+from app.models.user import User
+from app.models.site import Site
+from app.models.mission import Mission
+from app.models.marche import Marche
 
 def create_missions():
     db = SessionLocal()
     try:
-        # Chercher Hanae
-        hanae = db.query(User).filter(
-            User.email == "hanae@example.com"
-        ).first()
+        # 1. Get user Hanae Oukacha
+        user = db.query(User).filter(User.prenom == 'Hanae', User.nom == 'Oukacha').first()
+        if not user:
+            print("User Hanae Oukacha not found, trying with email...")
+            user = db.query(User).filter(User.email.like('hanae%sbs.ma')).first()
+            if not user:
+                print("User still not found! Please check the database.")
+                return
 
-        if not hanae:
-            print("Utilisateur Hanae Oukacha non trouvé !")
-            # Créons-la si elle n'existe pas
-            hanae = User(
-                nom="Oukacha",
-                prenom="Hanae",
-                email="hanae@example.com",
-                hashed_password="hash", # pas important juste pour la FK
-                role=RoleEnum.TECHNICIEN
-            )
-            db.add(hanae)
-            db.flush()
-            print("Création de l'utilisateur de test réussie.")
+        print(f"Found user: {user.prenom} {user.nom} (ID: {user.id})")
+
+        # 2. Get all sites from the database
+        sites_to_create_missions = db.query(Site).all()
         
-        print(f"Technicien trouvé : {hanae.nom} (ID: {hanae.id})")
+        if not sites_to_create_missions:
+            print("No sites found to create missions.")
+            return
 
-        # Récupérer tous les sites
-        sites = db.query(Site).all()
-        print(f"Nombre de sites trouvés : {len(sites)}")
-
-        today_str = date.today().isoformat()
-        count = 0
-
-        for site in sites:
-            # Vérifier si une mission existe déjà pour ce site aujourd'hui pour éviter les doublons massifs
-            existing = db.query(Mission).filter(
-                Mission.site_id == site.id,
-                Mission.technicien_id == hanae.id,
-                Mission.date_planifiee == today_str
-            ).first()
-
-            if not existing:
-                m = Mission(
-                    titre=f"Test Mission - {site.nom}",
-                    site_id=site.id,
-                    technicien_id=hanae.id,
-                    date_planifiee=today_str,
-                    statut=StatutMissionEnum.PLANIFIEE
-                )
-                db.add(m)
-                count += 1
-
+        # 3. Create missions
+        created_count = 0
+        today = datetime.now().date()
+        
+        for i, site in enumerate(sites_to_create_missions):
+            mission = Mission(
+                titre=f"Mission de Test {i+1} - {site.nom}",
+                description=f"Test workflow pour le site {site.nom}",
+                date_planifiee=today,
+                statut="PLANIFIEE",
+                site_id=site.id,
+                technicien_id=user.id
+            )
+            db.add(mission)
+            created_count += 1
+            
         db.commit()
-        print(f"✅ {count} missions de test créées pour aujourd'hui !")
+        print(f"Successfully created {created_count} missions for {user.email}.")
 
     except Exception as e:
-        print(f"Erreur : {e}")
+        print(f"Error: {e}")
         db.rollback()
     finally:
         db.close()

@@ -79,7 +79,6 @@ def soumettre_intervention(
         observations=payload.observations,
         est_hors_inventaire=payload.est_hors_inventaire,
         equipement_hors_inventaire=payload.equipement_hors_inventaire,
-        numero_serie_saisi=getattr(payload, 'numero_serie_saisi', None),
         signature_technicien=payload.signature_technicien,
         signature_client=payload.signature_client,
         signature_utilisateur=payload.signature_utilisateur,

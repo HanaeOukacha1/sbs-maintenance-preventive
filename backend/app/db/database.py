@@ -17,6 +17,8 @@ from app.core.config import settings
 engine = create_engine(
     settings.DATABASE_URL,
     echo=settings.DEBUG,  # En mode DEBUG, affiche les requêtes SQL dans la console
+    pool_pre_ping=True,   # Vérifie la connexion avant de l'utiliser (évite 'MySQL server has gone away')
+    pool_recycle=3600,    # Recycle les connexions toutes les heures
 )
 
 

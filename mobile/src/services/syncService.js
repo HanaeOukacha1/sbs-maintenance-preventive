@@ -10,27 +10,14 @@ const syncService = {
 
     console.log('🔄 Synchronisation...');
 
-    // 1. Missions du technicien
-    const missionsRes = await api.get('/missions/');
-    const missions = missionsRes.data;
-
-    // 2. Sites concernés
-    const siteIds = [...new Set(missions.map(m => m.site_id).filter(Boolean))];
+    // 1. Récupération de TOUTES les données (Missions, Sites, Equipements) en 1 seule requête
+    const syncRes = await api.get('/missions/sync-data');
+    const { missions, sites, equipements: allEquipements } = syncRes.data;
+    
+    // 2. Transformer la liste des sites en dictionnaire (sitesMap) pour l'insertion
     const sitesMap = {};
-    for (const siteId of siteIds) {
-      try {
-        const siteRes = await api.get(`/sites/${siteId}`);
-        sitesMap[siteId] = siteRes.data;
-      } catch (_) {}
-    }
-
-    // 3. Équipements pour chaque site
-    let allEquipements = [];
-    for (const siteId of siteIds) {
-      try {
-        const eqRes = await api.get(`/equipements/?site_id=${siteId}&limit=500`);
-        allEquipements = [...allEquipements, ...eqRes.data];
-      } catch (_) {}
+    for (const site of sites) {
+      sitesMap[site.id] = site;
     }
 
     // 4. Insérer dans SQLite
