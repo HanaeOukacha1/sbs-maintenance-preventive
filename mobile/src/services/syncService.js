@@ -106,15 +106,35 @@ const syncService = {
     let uploadedInterventions = 0;
     for (const intervention of pendingInterventions) {
       try {
+        let isHorsInventaire = intervention.est_hors_inventaire === 1;
+        let horsInventaireData = intervention.equipement_hors_inventaire
+            ? JSON.parse(intervention.equipement_hors_inventaire) : null;
+        let equipId = intervention.equipement_id || null;
+
+        // Si l'équipement est local, on le transforme en hors-inventaire pour le serveur
+        if (equipId) {
+           const eq = db.getFirstSync('SELECT * FROM equipements WHERE id = ?', [equipId]);
+           if (eq && eq.is_local === 1) {
+              isHorsInventaire = true;
+              equipId = null;
+              horsInventaireData = {
+                 numero_serie: eq.numero_serie,
+                 designation: eq.designation,
+                 type_equipement: eq.type_equipement,
+                 marque: eq.marque,
+                 modele: eq.modele
+              };
+           }
+        }
+
         const payload = {
           mission_id: intervention.mission_id,
-          equipement_id: intervention.equipement_id || null,
+          equipement_id: equipId,
           feuille: intervention.feuille || null,
           reponses: intervention.reponses ? JSON.parse(intervention.reponses) : null,
           observations: intervention.observations || null,
-          est_hors_inventaire: intervention.est_hors_inventaire === 1,
-          equipement_hors_inventaire: intervention.equipement_hors_inventaire
-            ? JSON.parse(intervention.equipement_hors_inventaire) : null,
+          est_hors_inventaire: isHorsInventaire,
+          equipement_hors_inventaire: horsInventaireData,
           signature_technicien: intervention.signature_technicien || null,
           signature_client: intervention.signature_client || null,
           signature_utilisateur: intervention.signature_utilisateur || null,

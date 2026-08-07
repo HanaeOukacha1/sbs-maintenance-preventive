@@ -8,10 +8,7 @@ conn = engine.connect()
 folder_path = r'C:\Users\hanae\Desktop\Stage PFA 2026\MASTER DATA\MSANTE'
 tech_id = 4 # hanae
 
-print("Deleting all missions for Hanae...")
-conn.execute(text("DELETE FROM missions WHERE technicien_id = :uid"), {'uid': tech_id})
-conn.commit()
-
+print("Setting up MSANTE for Hanae...")
 print("Setting up MSANTE...")
 
 # Fetch MSANTE marche_id

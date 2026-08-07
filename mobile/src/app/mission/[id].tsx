@@ -14,6 +14,7 @@ import api from '../../services/api';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import FicheInterventionModal from '../../components/FicheInterventionModal';
+import AddEquipmentModal from '../../components/AddEquipmentModal';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Mission {
@@ -80,6 +81,7 @@ export default function MissionDetailScreen() {
   const [saving, setSaving] = useState(false);
 
   const [selectedEq, setSelectedEq] = useState<Equipement | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // ── Charger mission ──
   useEffect(() => {
@@ -154,6 +156,46 @@ export default function MissionDetailScreen() {
     } finally {
       setSaving(false);
       setSelectedEq(null);
+    }
+  };
+
+  const handleAddEquipment = (data: any) => {
+    if (!mission) return;
+    try {
+      db.runSync(
+        `INSERT INTO equipements
+          (site_id, sous_site, designation, marque, modele, numero_serie, numero_inventaire,
+           direction, bureau, emplacement, affectation, entite, utilisateur_nom,
+           cpu, ram, disque_dur, systeme_exploitation, puissance_kva, nb_batteries,
+           capacite_batteries, is_local)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1)`,
+        [
+          mission.site_id,
+          feuilleActive || null,
+          data.designation || '',
+          data.marque || '',
+          data.modele || '',
+          data.numero_serie || '',
+          data.numero_inventaire || '',
+          data.direction || '',
+          data.bureau || '',
+          data.emplacement || '',
+          data.affectation || '',
+          data.entite || '',
+          data.utilisateur_nom || '',
+          data.cpu || '',
+          data.ram || '',
+          data.disque_dur || '',
+          data.systeme_exploitation || '',
+          data.puissance_kva || '',
+          data.nb_batteries || null,
+          data.capacite_batteries || '',
+        ]
+      );
+      setSaving(s => !s); // trigger reload de la liste
+      Alert.alert('✅ Ajouté', `"${data.designation || 'Équipement'}" a été ajouté localement.`);
+    } catch (e: any) {
+      Alert.alert('Erreur', e?.message);
     }
   };
 
@@ -384,6 +426,16 @@ export default function MissionDetailScreen() {
 
       </ScrollView>
 
+      {/* Bouton flottant Ajouter équipement */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => setShowAddModal(true)}
+        activeOpacity={0.85}
+      >
+        <Plus color="#fff" size={22} />
+        <Text style={styles.fabText}>Ajouter</Text>
+      </TouchableOpacity>
+
       {/* Modal Fiche d'intervention */}
       <FicheInterventionModal 
         visible={!!selectedEq} 
@@ -392,6 +444,16 @@ export default function MissionDetailScreen() {
         feuille={feuilleActive}
         onClose={() => setSelectedEq(null)}
         onSave={handleSaveModal}
+      />
+
+      {/* Modal Ajout équipement sur site */}
+      <AddEquipmentModal
+        visible={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onAdd={handleAddEquipment}
+        checklistType={checklistType}
+        feuilleActive={feuilleActive}
+        siteId={mission.site_id}
       />
     </View>
   );
@@ -492,4 +554,14 @@ const styles = StyleSheet.create({
 
   empty: { alignItems: 'center', paddingVertical: 40 },
   emptyText: { color: '#94a3b8', fontSize: 15 },
+
+  fab: {
+    position: 'absolute', bottom: 28, right: 20,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: '#22b5d8', paddingHorizontal: 20, paddingVertical: 14,
+    borderRadius: 30,
+    shadowColor: '#22b5d8', shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4, shadowRadius: 12, elevation: 8,
+  },
+  fabText: { color: '#fff', fontWeight: '800', fontSize: 15 },
 });
