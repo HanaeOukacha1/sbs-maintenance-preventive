@@ -1,27 +1,130 @@
 import React, { useState, useEffect } from 'react';
-import { FileJson, Search, Plus, Eye, Code } from 'lucide-react';
+import { FileJson, Search, Plus, Eye, Code, Edit, Trash2, Save, GripVertical } from 'lucide-react';
 import api from '../services/api';
+import Modal from '../components/Modal';
 
 const Schemas = () => {
   const [schemas, setSchemas] = useState([]);
+  const [marches, setMarches] = useState([]);
+  const [sites, setSites] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const fetchSchemas = async () => {
+  // Form Builder state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingSchema, setEditingSchema] = useState(null);
+  const [formData, setFormData] = useState({ nom: '', type_equipement: 'GLOBAL', description: '', marche_id: '', site_id: '' });
+  const [schemaFields, setSchemaFields] = useState([]);
+
+  const fetchData = async () => {
     try {
       setIsLoading(true);
-      const response = await api.get('/json-schemas/');
-      setSchemas(response.data);
+      const [schemasRes, marchesRes, sitesRes] = await Promise.all([
+        api.get('/json-schemas/'),
+        api.get('/marches/'),
+        api.get('/sites/')
+      ]);
+      setSchemas(schemasRes.data);
+      setMarches(marchesRes.data);
+      setSites(sitesRes.data);
     } catch (error) {
-      console.error("Erreur lors de la récupération des schémas:", error);
+      console.error("Erreur lors de la récupération des données:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchSchemas();
+    fetchData();
   }, []);
+
+  const openCreateModal = () => {
+    setEditingSchema(null);
+    setFormData({ nom: '', type_equipement: 'GLOBAL', description: '', marche_id: '', site_id: '' });
+    setSchemaFields([]);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (schema) => {
+    setEditingSchema(schema);
+    setFormData({ 
+      nom: schema.nom, 
+      type_equipement: schema.type_equipement, 
+      description: schema.description || '',
+      marche_id: schema.marche_id || '',
+      site_id: schema.site_id || ''
+    });
+    
+    let parsedFields = [];
+    try {
+      const data = typeof schema.schema_data === 'string' ? JSON.parse(schema.schema_data) : schema.schema_data;
+      if (Array.isArray(data)) {
+        parsedFields = data;
+      } else if (typeof data === 'object' && data !== null && data.properties) {
+        // Fallback for old schema format {"type": "object", "properties": {...}}
+        parsedFields = Object.keys(data.properties).map(k => ({
+          key: k,
+          label: data.properties[k].title || k,
+          options: data.properties[k].type === 'boolean' ? ['OK', 'NON'] : []
+        }));
+      }
+    } catch (e) {
+      console.warn("Invalid schema_data format", e);
+    }
+    
+    setSchemaFields(parsedFields);
+    setIsModalOpen(true);
+  };
+
+  const addField = () => {
+    const newField = {
+      key: `field_${Date.now()}`,
+      label: 'Nouveau champ',
+      options: ['OK', 'Non']
+    };
+    setSchemaFields([...schemaFields, newField]);
+  };
+
+  const updateField = (index, key, value) => {
+    const updated = [...schemaFields];
+    if (key === 'options') {
+      updated[index][key] = value.split(',').map(s => s.trim()).filter(s => s);
+    } else {
+      updated[index][key] = value;
+    }
+    setSchemaFields(updated);
+  };
+
+  const removeField = (index) => {
+    setSchemaFields(schemaFields.filter((_, i) => i !== index));
+  };
+
+  const handleSaveSchema = async (e) => {
+    e.preventDefault();
+    try {
+      setIsSubmitting(true);
+      const payload = {
+        ...formData,
+        marche_id: formData.marche_id ? parseInt(formData.marche_id) : null,
+        site_id: formData.site_id ? parseInt(formData.site_id) : null,
+        schema_data: schemaFields
+      };
+
+      if (editingSchema) {
+        await api.put(`/json-schemas/${editingSchema.id}`, payload);
+      } else {
+        await api.post('/json-schemas/', payload);
+      }
+      
+      await fetchData();
+      setIsModalOpen(false);
+    } catch (error) {
+      alert("Erreur lors de la sauvegarde : " + (error.response?.data?.detail || error.message));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const filteredSchemas = schemas.filter(s => 
     s.nom.toLowerCase().includes(searchTerm.toLowerCase())
@@ -34,7 +137,7 @@ const Schemas = () => {
           <h1 className="text-h1">Modèles de Formulaires (JSON Schemas)</h1>
           <p className="text-muted">Gérez la structure des formulaires dynamiques envoyés à l'application mobile.</p>
         </div>
-        <button className="btn btn-primary">
+        <button className="btn btn-primary" onClick={openCreateModal}>
           <Plus size={16} /> Nouveau Schéma
         </button>
       </div>
@@ -63,7 +166,7 @@ const Schemas = () => {
             <div key={schema.id} className="card schema-card">
               <div className="schema-header border-bottom p-3 d-flex justify-between items-center">
                 <div className="d-flex items-center gap-2">
-                  <FileJson size={20} className="text-muted" />
+                  <FileJson size={20} className="text-primary" />
                   <h3 className="text-h3" style={{ margin: 0 }}>{schema.nom}</h3>
                 </div>
                 <span className={`badge ${schema.is_active ? 'cyan' : 'gray'}`}>
@@ -82,11 +185,8 @@ const Schemas = () => {
                   </span>
                   
                   <div className="d-flex gap-2">
-                    <button className="btn-icon" title="Voir les champs">
-                      <Eye size={16} className="text-muted" />
-                    </button>
-                    <button className="btn-icon" title="Voir le JSON brut">
-                      <Code size={16} className="text-muted" />
+                    <button className="btn-icon" title="Modifier" onClick={() => openEditModal(schema)}>
+                      <Edit size={16} className="text-primary" />
                     </button>
                   </div>
                 </div>
@@ -95,6 +195,142 @@ const Schemas = () => {
           ))
         )}
       </div>
+
+      {/* MODAL FORM BUILDER */}
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)}
+        title={editingSchema ? `Modifier le schéma : ${editingSchema.nom}` : "Nouveau Schéma JSON"}
+      >
+        <form onSubmit={handleSaveSchema} className="flex-col gap-4">
+          <div className="d-flex gap-3">
+            <div className="form-group flex-1">
+              <label className="form-label">Nom du schéma (ex: ADM, ANCFCC)</label>
+              <input 
+                type="text" className="form-input" required
+                value={formData.nom} 
+                onChange={e => setFormData({...formData, nom: e.target.value})}
+              />
+            </div>
+            <div className="form-group flex-1">
+              <label className="form-label">Type d'équipement visé</label>
+              <input 
+                type="text" className="form-input" required
+                value={formData.type_equipement} 
+                onChange={e => setFormData({...formData, type_equipement: e.target.value})}
+              />
+            </div>
+          </div>
+          
+          <div className="d-flex gap-3 mt-2">
+            <div className="form-group flex-1">
+              <label className="form-label">Marché cible (optionnel)</label>
+              <select 
+                className="form-input" 
+                value={formData.marche_id}
+                onChange={e => setFormData({...formData, marche_id: e.target.value, site_id: ''})}
+              >
+                <option value="">Tous les marchés / Par défaut</option>
+                {marches.map(m => (
+                  <option key={m.id} value={m.id}>{m.nom}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group flex-1">
+              <label className="form-label">Site cible (optionnel)</label>
+              <select 
+                className="form-input" 
+                value={formData.site_id}
+                onChange={e => setFormData({...formData, site_id: e.target.value})}
+                disabled={!formData.marche_id}
+              >
+                <option value="">Tous les sites du marché</option>
+                {sites.filter(s => s.marche_id == formData.marche_id).map(s => (
+                  <option key={s.id} value={s.id}>{s.nom}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label">Description (optionnelle)</label>
+            <input 
+              type="text" className="form-input"
+              value={formData.description} 
+              onChange={e => setFormData({...formData, description: e.target.value})}
+            />
+          </div>
+
+          <div className="form-builder border-top pt-4 mt-2">
+            <div className="d-flex justify-between items-center mb-3">
+              <h3 className="text-h3" style={{ margin: 0 }}>Champs du formulaire ({schemaFields.length})</h3>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={addField}>
+                <Plus size={14} /> Ajouter un champ
+              </button>
+            </div>
+
+            <div className="fields-container" style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '8px' }}>
+              {schemaFields.length === 0 ? (
+                <div className="text-center text-muted py-4" style={{ backgroundColor: '#f8fafc', borderRadius: '8px' }}>
+                  Aucun champ défini. Cliquez sur "Ajouter un champ".
+                </div>
+              ) : (
+                schemaFields.map((field, index) => (
+                  <div key={index} className="field-editor-card mb-3 p-3" style={{ backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                    <div className="d-flex justify-between items-start mb-2">
+                      <div className="d-flex items-center gap-2">
+                        <GripVertical size={16} className="text-muted" style={{ cursor: 'move' }} />
+                        <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>Champ #{index + 1}</span>
+                      </div>
+                      <button type="button" className="btn-icon delete" onClick={() => removeField(index)}>
+                        <Trash2 size={16} className="text-danger" />
+                      </button>
+                    </div>
+                    
+                    <div className="d-flex gap-3 mb-2">
+                      <div className="form-group flex-1" style={{ marginBottom: 0 }}>
+                        <label style={{ fontSize: '0.75rem', color: '#64748b' }}>Clé technique (unique)</label>
+                        <input 
+                          type="text" className="form-input" style={{ padding: '6px 12px' }}
+                          value={field.key || ''} 
+                          onChange={e => updateField(index, 'key', e.target.value)}
+                        />
+                      </div>
+                      <div className="form-group flex-1" style={{ marginBottom: 0 }}>
+                        <label style={{ fontSize: '0.75rem', color: '#64748b' }}>Label affiché à l'utilisateur</label>
+                        <input 
+                          type="text" className="form-input" style={{ padding: '6px 12px' }}
+                          value={field.label || ''} 
+                          onChange={e => updateField(index, 'label', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <label style={{ fontSize: '0.75rem', color: '#64748b' }}>Options (séparées par une virgule)</label>
+                      <input 
+                        type="text" className="form-input" style={{ padding: '6px 12px' }}
+                        value={Array.isArray(field.options) ? field.options.join(', ') : ''} 
+                        onChange={e => updateField(index, 'options', e.target.value)}
+                        placeholder="Ex: OK, Non, À remplacer"
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="d-flex justify-end gap-2 mt-4 pt-4 border-top">
+            <button type="button" className="btn btn-secondary" onClick={() => setIsModalOpen(false)}>
+              Annuler
+            </button>
+            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+              {isSubmitting ? 'Enregistrement...' : (editingSchema ? 'Mettre à jour' : 'Créer le schéma')}
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       <style>{`
         .schemas-grid {
@@ -116,10 +352,17 @@ const Schemas = () => {
           border-radius: 6px;
           background-color: #f1f5f9;
           transition: background-color var(--transition-fast);
+          border: none;
+          cursor: pointer;
         }
         .btn-icon:hover {
           background-color: var(--border-strong);
         }
+        .btn-icon.delete:hover {
+          background-color: #fee2e2;
+        }
+        .text-primary { color: var(--primary); }
+        .text-danger { color: #ef4444; }
       `}</style>
     </div>
   );

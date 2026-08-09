@@ -8,7 +8,8 @@ import {
   Briefcase,
   ClipboardList,
   LogOut, 
-  Settings
+  Settings,
+  FileJson
 } from 'lucide-react';
 import authService from '../services/authService';
 
@@ -26,6 +27,7 @@ const Sidebar = () => {
     { name: 'Équipements',          path: '/equipements',icon: <Monitor size={20} /> },
     { name: 'Missions',             path: '/missions',   icon: <Briefcase size={20} /> },
     { name: 'Rapports',             path: '/rapports',   icon: <ClipboardList size={20} /> },
+    { name: 'JSON Schemas',         path: '/schemas',    icon: <FileJson size={20} /> },
     { name: 'Utilisateurs',         path: '/users',      icon: <Users size={20} /> },
   ];
 

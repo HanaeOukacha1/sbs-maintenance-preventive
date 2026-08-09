@@ -34,5 +34,8 @@ class Marche(Base):
     # "back_populates" crée le lien inverse : site.marche
     sites = relationship("Site", back_populates="marche", cascade="all, delete-orphan")
 
+    # Relation : un marché a plusieurs techniciens
+    techniciens = relationship("User", back_populates="marche")
+
     def __repr__(self):
         return f"<Marche {self.nom} - {self.client}>"

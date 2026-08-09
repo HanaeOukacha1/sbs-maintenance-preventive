@@ -9,14 +9,18 @@ from datetime import datetime
 class JsonSchemaCreate(BaseModel):
     nom: str
     type_equipement: str
-    schema_data: Dict[str, Any]
+    schema_data: Any
+    marche_id: Optional[int] = None
+    site_id: Optional[int] = None
     description: Optional[str] = None
 
 
 class JsonSchemaUpdate(BaseModel):
     nom: Optional[str] = None
     type_equipement: Optional[str] = None
-    schema_data: Optional[Dict[str, Any]] = None
+    schema_data: Optional[Any] = None
+    marche_id: Optional[int] = None
+    site_id: Optional[int] = None
     is_active: Optional[bool] = None
     description: Optional[str] = None
 
@@ -29,7 +33,9 @@ class JsonSchemaResponse(BaseModel):
     nom: str
     type_equipement: str
     version: int
-    schema_data: Dict[str, Any]
+    schema_data: Any
+    marche_id: Optional[int] = None
+    site_id: Optional[int] = None
     is_active: bool
     description: Optional[str] = None
     created_at: Optional[datetime] = None

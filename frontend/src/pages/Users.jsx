@@ -6,6 +6,7 @@ import Modal from '../components/Modal';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
+  const [marches, setMarches] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -13,7 +14,7 @@ const Users = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    nom: '', prenom: '', email: '', password: '', role: 'TECHNICIEN'
+    nom: '', prenom: '', email: '', password: '', role: 'TECHNICIEN', marche_id: ''
   });
   const [formErrors, setFormErrors] = useState({});
   const [globalError, setGlobalError] = useState('');
@@ -21,20 +22,24 @@ const Users = () => {
   // L'utilisateur actuellement connecté
   const currentUser = authService.getCurrentUser();
 
-  const fetchUsers = async () => {
+  const fetchUsersAndMarches = async () => {
     try {
       setIsLoading(true);
-      const response = await api.get('/users/');
-      setUsers(response.data);
+      const [usersRes, marchesRes] = await Promise.all([
+        api.get('/users/'),
+        api.get('/marches/')
+      ]);
+      setUsers(usersRes.data);
+      setMarches(marchesRes.data);
     } catch (error) {
-      console.error("Erreur lors de la récupération des utilisateurs:", error);
+      console.error("Erreur lors de la récupération des données:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchUsersAndMarches();
   }, []);
 
   const handleDelete = async (userId) => {
@@ -76,6 +81,10 @@ const Users = () => {
       errors.password = "Le mot de passe doit contenir au moins 8 caractères.";
     }
 
+    if (formData.role === 'TECHNICIEN' && !formData.marche_id) {
+      errors.marche_id = "Le marché est requis pour un technicien.";
+    }
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -91,13 +100,19 @@ const Users = () => {
       setIsSubmitting(true);
       setGlobalError('');
       // Appel API pour créer l'utilisateur
-      const response = await api.post('/users/', formData);
+      const payload = { ...formData };
+      if (payload.role !== 'TECHNICIEN' || !payload.marche_id) {
+        payload.marche_id = null;
+      } else {
+        payload.marche_id = parseInt(payload.marche_id, 10);
+      }
+      const response = await api.post('/users/', payload);
       
       // Ajouter le nouvel utilisateur à la liste locale
       setUsers([...users, response.data]);
       
       // Réinitialiser et fermer la modale
-      setFormData({ nom: '', prenom: '', email: '', password: '', role: 'TECHNICIEN' });
+      setFormData({ nom: '', prenom: '', email: '', password: '', role: 'TECHNICIEN', marche_id: '' });
       setFormErrors({});
       setIsModalOpen(false);
     } catch (error) {
@@ -173,6 +188,7 @@ const Users = () => {
                 <th>Utilisateur</th>
                 <th>Email</th>
                 <th>Rôle</th>
+                <th>Marché</th>
                 <th>Statut</th>
                 <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
@@ -201,6 +217,13 @@ const Users = () => {
                       }`}>
                         {user.role}
                       </span>
+                    </td>
+                    <td>
+                      {user.role === 'TECHNICIEN' && user.marche_nom ? (
+                        <span className="badge blue">{user.marche_nom}</span>
+                      ) : (
+                        <span className="text-muted" style={{ fontSize: '0.85rem' }}>-</span>
+                      )}
                     </td>
                     <td>
                       <span className={`badge ${user.is_active ? 'cyan' : 'gray'}`}>
@@ -341,6 +364,22 @@ const Users = () => {
               Note : La création d'Administrateur est verrouillée.
             </div>
           </div>
+
+          {formData.role === 'TECHNICIEN' && (
+            <div className="form-group">
+              <label className="form-label">Affectation au marché <span className="text-danger">*</span></label>
+              <select 
+                name="marche_id" className={`form-input ${formErrors.marche_id ? 'error-input' : ''}`}
+                value={formData.marche_id} onChange={handleInputChange}
+              >
+                <option value="">-- Sélectionner un marché --</option>
+                {marches.map(m => (
+                  <option key={m.id} value={m.id}>{m.nom}</option>
+                ))}
+              </select>
+              {formErrors.marche_id && <div className="error-text">{formErrors.marche_id}</div>}
+            </div>
+          )}
 
           <div className="d-flex justify-end gap-2 mt-4 pt-4 border-top">
             <button 

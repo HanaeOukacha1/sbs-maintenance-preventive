@@ -46,6 +46,8 @@ def creer_schema(
         type_equipement=payload.type_equipement,
         version=1,
         schema_data=payload.schema_data,
+        marche_id=payload.marche_id,
+        site_id=payload.site_id,
         is_active=True,
         description=payload.description
     )

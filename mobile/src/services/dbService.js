@@ -83,6 +83,17 @@ export const initDB = () => {
         checklist_type TEXT,
         feuilles TEXT
       );
+
+      CREATE TABLE IF NOT EXISTS json_schemas (
+        id INTEGER PRIMARY KEY,
+        nom TEXT,
+        type_equipement TEXT,
+        version INTEGER,
+        schema_data TEXT,
+        is_active INTEGER,
+        marche_id INTEGER,
+        site_id INTEGER
+      );
     `);
 
     // Migrations légères pour BD existante
@@ -99,6 +110,8 @@ export const initDB = () => {
       'ALTER TABLE equipements ADD COLUMN marque TEXT',
       'ALTER TABLE equipements ADD COLUMN modele TEXT',
       'ALTER TABLE equipements ADD COLUMN numero_inventaire TEXT',
+      'ALTER TABLE equipements ADD COLUMN numero_serie TEXT',
+      'ALTER TABLE equipements ADD COLUMN observations TEXT',
       'ALTER TABLE equipements ADD COLUMN direction TEXT',
       'ALTER TABLE equipements ADD COLUMN bureau TEXT',
       'ALTER TABLE equipements ADD COLUMN emplacement TEXT',
@@ -128,6 +141,8 @@ export const initDB = () => {
       'ALTER TABLE interventions ADD COLUMN signature_utilisateur TEXT',
       'ALTER TABLE interventions ADD COLUMN heure_debut TEXT',
       'ALTER TABLE interventions ADD COLUMN heure_fin TEXT',
+      'ALTER TABLE json_schemas ADD COLUMN marche_id INTEGER',
+      'ALTER TABLE json_schemas ADD COLUMN site_id INTEGER',
     ];
 
     for (const sql of migrations) {

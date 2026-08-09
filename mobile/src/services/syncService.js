@@ -10,9 +10,9 @@ const syncService = {
 
     console.log('🔄 Synchronisation...');
 
-    // 1. Récupération de TOUTES les données (Missions, Sites, Equipements) en 1 seule requête
+    // 1. Récupération de TOUTES les données (Missions, Sites, Equipements, Schemas) en 1 seule requête
     const syncRes = await api.get('/missions/sync-data');
-    const { missions, sites, equipements: allEquipements } = syncRes.data;
+    const { missions, sites, equipements: allEquipements, json_schemas } = syncRes.data;
     
     // 2. Transformer la liste des sites en dictionnaire (sitesMap) pour l'insertion
     const sitesMap = {};
@@ -24,6 +24,7 @@ const syncService = {
     db.withTransactionSync(() => {
       db.execSync('DELETE FROM missions;');
       db.execSync('DELETE FROM sites;');
+      db.execSync('DELETE FROM json_schemas;');
       db.execSync('DELETE FROM equipements WHERE is_local = 0;');
 
       // Sites
@@ -38,6 +39,22 @@ const syncService = {
         ]);
       }
       insSite.finalizeSync();
+
+      // JSON Schemas
+      const insSchema = db.prepareSync(
+        'INSERT OR REPLACE INTO json_schemas (id, nom, type_equipement, version, schema_data, is_active, marche_id, site_id) VALUES (?,?,?,?,?,?,?,?)'
+      );
+      for (const schema of (json_schemas || [])) {
+        insSchema.executeSync([
+          schema.id, schema.nom, schema.type_equipement || '', 
+          schema.version || 1, 
+          typeof schema.schema_data === 'string' ? schema.schema_data : JSON.stringify(schema.schema_data), 
+          schema.is_active ? 1 : 0,
+          schema.marche_id || null,
+          schema.site_id || null
+        ]);
+      }
+      insSchema.finalizeSync();
 
       // Missions
       const insMission = db.prepareSync(
@@ -150,7 +167,15 @@ const syncService = {
         );
         uploadedInterventions++;
       } catch (err) {
-        console.error('Erreur upload intervention', intervention.id, err);
+        if (err?.response?.status === 404) {
+          // Si 404, la mission ou l'équipement a été supprimé sur le serveur (ex: reset BD).
+          // On supprime l'intervention locale pour ne pas bloquer la file d'attente.
+          db.runSync('DELETE FROM interventions WHERE id = ?', [intervention.id]);
+          continue;
+        }
+        let detail = err?.response?.data?.detail;
+        if (Array.isArray(detail)) detail = JSON.stringify(detail);
+        throw new Error("Intervention " + intervention.id + " rejetée: " + (detail || err.message));
       }
     }
 
@@ -161,7 +186,13 @@ const syncService = {
         db.runSync('UPDATE missions SET sync_statut_en_attente = 0 WHERE id = ?', [m.id]);
         uploadedMissions++;
       } catch (err) {
-        console.error('Erreur upload statut mission', m.id, err);
+        if (err?.response?.status === 404) {
+          db.runSync('UPDATE missions SET sync_statut_en_attente = 0 WHERE id = ?', [m.id]);
+          continue;
+        }
+        let detail = err?.response?.data?.detail;
+        if (Array.isArray(detail)) detail = JSON.stringify(detail);
+        throw new Error("Mission " + m.id + " rejetée: " + (detail || err.message));
       }
     }
 

@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 // 1. Lancez npx localtunnel --port 8000
-export const API_URL = 'http://192.168.11.226:8000/api/v1';
+export const API_URL = 'http://192.168.1.113:8000/api/v1';
 
 const api = axios.create({
   baseURL: API_URL,

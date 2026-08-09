@@ -37,10 +37,20 @@ class JsonSchema(Base):
     # Description / notes de version
     description = Column(Text, nullable=True)
 
+    # Optionnel: liaison à un marché spécifique
+    marche_id = Column(Integer, ForeignKey("marches.id"), nullable=True)
+
+    # Optionnel: liaison à un site spécifique
+    site_id = Column(Integer, ForeignKey("sites.id"), nullable=True)
+
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relation : un schéma peut être utilisé dans plusieurs missions
     missions = relationship("Mission", back_populates="json_schema")
+    
+    # Relations parentes
+    marche = relationship("Marche")
+    site = relationship("Site")
 
     def __repr__(self):
         return f"<JsonSchema {self.nom} v{self.version}>"

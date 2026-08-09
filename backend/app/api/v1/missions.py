@@ -65,6 +65,7 @@ def creer_mission(
 
 from app.models.site import Site
 from app.models.equipement import Equipement
+from app.models.json_schema import JsonSchema
 
 @router.get("/sync-data")
 def get_sync_data(
@@ -84,10 +85,14 @@ def get_sync_data(
     # 3. Équipements de ces sites
     equipements = db.query(Equipement).filter(Equipement.site_id.in_(site_ids)).all() if site_ids else []
     
+    # 4. JSON Schemas actifs
+    json_schemas = db.query(JsonSchema).filter(JsonSchema.is_active == True).all()
+
     return {
         "missions": missions,
         "sites": sites,
-        "equipements": equipements
+        "equipements": equipements,
+        "json_schemas": json_schemas
     }
 
 @router.get("/{mission_id}", response_model=MissionResponse)

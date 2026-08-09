@@ -1,5 +1,6 @@
 import enum
-from sqlalchemy import Column, Integer, String, Boolean, Enum, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, Enum, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.db.database import Base
 
@@ -42,9 +43,17 @@ class User(Base):
     # Compte actif ou désactivé (soft delete)
     is_active = Column(Boolean, default=True)
 
+    # Marché auquel le technicien est affecté
+    marche_id = Column(Integer, ForeignKey('marches.id'), nullable=True)
+    marche = relationship("Marche", back_populates="techniciens")
+
     # Timestamps automatiques
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    @property
+    def marche_nom(self):
+        return self.marche.nom if self.marche else None
 
     def __repr__(self):
         return f"<User {self.email} ({self.role})>"

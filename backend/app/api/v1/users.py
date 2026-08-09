@@ -4,6 +4,7 @@ from typing import List
 
 from app.db.database import get_db
 from app.models.user import User, RoleEnum
+from app.models.marche import Marche
 from app.schemas.user import UserCreate, UserUpdate, UserResponse
 from app.core.security import hash_password
 from app.core.dependencies import get_current_user, require_role
@@ -68,6 +69,15 @@ def creer_utilisateur(
             detail="La création d'un compte ADMIN n'est pas autorisée via cette route."
         )
 
+    # Si un marché est fourni, vérifier qu'il existe
+    if payload.marche_id:
+        marche = db.query(Marche).filter(Marche.id == payload.marche_id).first()
+        if not marche:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Le marché avec l'id {payload.marche_id} est introuvable."
+            )
+
     # Créer l'utilisateur avec le mot de passe haché
     user = User(
         nom=payload.nom,
@@ -75,6 +85,7 @@ def creer_utilisateur(
         email=payload.email,
         hashed_password=hash_password(payload.password),
         role=payload.role,
+        marche_id=payload.marche_id,
         is_active=True
     )
     db.add(user)
@@ -148,6 +159,15 @@ def modifier_utilisateur(
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"L'email '{payload.email}' est déjà utilisé."
+            )
+
+    # Vérifier que le marché existe s'il est modifié
+    if payload.marche_id:
+        marche = db.query(Marche).filter(Marche.id == payload.marche_id).first()
+        if not marche:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Le marché avec l'id {payload.marche_id} est introuvable."
             )
 
     # Mettre à jour seulement les champs fournis

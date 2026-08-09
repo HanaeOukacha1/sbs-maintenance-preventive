@@ -57,7 +57,7 @@ class Site(Base):
     # TYPE DE CHECKLIST
     # Détermine quel caneva s'affiche dans l'app mobile pour ce site.
     # ------------------------------------------------------------------
-    checklist_type = Column(Enum(ChecklistTypeEnum), nullable=True)
+    checklist_type = Column(String(100), nullable=True)
 
     # ------------------------------------------------------------------
     # FEUILLES / ONGLETS DISPONIBLES

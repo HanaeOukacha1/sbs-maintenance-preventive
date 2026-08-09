@@ -6,6 +6,7 @@ import {
 import { X, CheckCircle2, Circle, Save, Server, Monitor, Printer, Activity, FileText } from 'lucide-react-native';
 import SignatureScreen from 'react-native-signature-canvas';
 import syncService from '../services/syncService';
+import db from '../services/dbService';
 
 interface FicheInterventionModalProps {
   visible: boolean;
@@ -16,78 +17,12 @@ interface FicheInterventionModalProps {
   onSave: (eqData: any, reponses: any) => void;
 }
 
-const FIELD_LABELS: Record<string, { label: string; options: string[] }> = {
-  etat_software: { label: 'État Software', options: ['OK', 'Non'] },
-  etat_hardware: { label: 'État Hardware', options: ['OK', 'Non'] },
-  etat:          { label: 'État Général', options: ['OK', 'Non'] },
-  statut:        { label: 'Statut', options: ['OK', 'Non'] },
-  observation:   { label: 'Observation', options: ['BON', 'DÉFAILLANT', 'À RÉPARER'] },
-  observation_cndh: { label: 'Observation', options: ['Bon', 'En panne', 'En réparation'] },
-  etat_msante:   { label: 'État', options: ['BON', 'EN PANNE', 'À RÉPARER'] },
-};
 
-const CHECKLIST_FIELDS: Record<string, string[]> = {
-  ADM:             ['etat_software', 'etat_hardware'],
-  AMEE_MARRAKECH:  ['statut'],
-  AMEE_RABAT:      ['statut'],
-  ANCFCC:          [], // géré par ONDULEUR
-  ANP:             ['etat'],
-  AOH:             ['etat'],
-  INPPLC:          ['observation'],
-  MARSA_MAROC:     ['observation'],
-  MHAI:            ['observation'],
-  MSANTE_STANDARD: ['etat_msante'],
-  MSANTE_CAPM:     ['etat_msante'],
-  MSANTE_DPRF:     ['etat_msante'],
-  ONP:             ['etat'],
-  CNDH_G1:         ['observation_cndh'],
-  CNDH_G2:         ['observation_cndh'],
-  CNDH_SIEGE:      ['observation_cndh'],
-};
-
-// Helper : carte lecture seule pour les marchés AMEE
-const ReadOnlyCard = ({ fields, color = '#f0fdf4', border = '#bbf7d0' }: { fields: {label: string; value: any}[]; color?: string; border?: string }) => (
-  <View style={{ backgroundColor: color, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: border, marginBottom: 4 }}>
-    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-      {fields.filter(f => f.value).map(({ label, value }) => (
-        <View key={label} style={{ minWidth: '45%', flex: 1, marginBottom: 4 }}>
-          <Text style={{ fontSize: 11, color: '#64748b', fontWeight: '600' }}>{label}</Text>
-          <Text style={{ fontSize: 13, color: '#0f172a', fontWeight: '700', marginTop: 2 }}>{value || '—'}</Text>
-        </View>
-      ))}
-    </View>
-  </View>
-);
-
-const ONDULEUR_TEMPLATE = [
-  { key: 'pt1', label: 'Vérification du matériel', options: ['oui', 'non'] },
-  { key: 'pt2', label: 'Contrôle des différents paramètres électriques en entrée/sortie', options: ['oui', 'non'] },
-  { key: 'pt3', label: 'Contrôle du bruit des différents composants mécaniques', options: ['oui', 'non'] },
-  { key: 'pt4', label: 'Test de simulation de fonctionnement du matériel (sur batteries, by-pass...)', options: ['oui', 'non'] },
-  { key: 'pt5', label: 'Vérification de la carte SNMP et la communication à distance', options: ['oui', 'non'] },
-  { key: 'pt6', label: "Contrôle de l'ensemble des batteries", options: ['oui', 'non'] },
-  { key: 'pt7', label: 'Réparation de tout défaut constaté si nécessaire', options: ['oui', 'non'] },
-  { key: 'pt8', label: 'Ouvrir un incident (maintenance curative), en cas de panne matériel, en vue de : a. Réparation de tout défaut constaté b. Remplacement de tout composant reconnu défectueux pendant la visite', options: ['oui', 'non'] },
-  { key: 'pt9', label: 'Nettoyage et dépoussiérage', options: ['oui', 'non'] },
-  { key: 'pt10', label: "Rédaction d'un rapport de synthèse à l'issue de la visite", options: ['oui', 'non'] },
-];
-
-const ADM_TEMPLATE = [
-  { key: 'adm1', label: 'Vérification des journaux d\'événements (Event Logs)', options: ['oui', 'non'] },
-  { key: 'adm2', label: 'Contrôle des mises à jour système (OS)', options: ['oui', 'non'] },
-  { key: 'adm3', label: 'Vérification de l\'état de la mémoire (RAM)', options: ['oui', 'non'] },
-  { key: 'adm4', label: 'Vérification de l\'état des disques (Espace & SMART)', options: ['oui', 'non'] },
-  { key: 'adm5', label: 'Contrôle de la connectivité réseau', options: ['oui', 'non'] },
-  { key: 'adm6', label: 'Vérification de l\'état des sauvegardes', options: ['oui', 'non'] },
-  { key: 'adm7', label: 'Contrôle des paramètres de sécurité (Antivirus/Firewall)', options: ['oui', 'non'] },
-  { key: 'adm8', label: 'Nettoyage physique (dépoussiérage) si nécessaire', options: ['oui', 'non'] },
-  { key: 'adm9', label: 'Vérification du fonctionnement des ventilateurs', options: ['oui', 'non'] },
-  { key: 'adm10', label: "Rédaction d'un rapport de synthèse de l'intervention", options: ['oui', 'non'] },
-];
 
 export default function FicheInterventionModal({ visible, equipement, mission, feuille, onClose, onSave }: FicheInterventionModalProps) {
   const [eqData, setEqData] = useState<any>({});
   const [reponses, setReponses] = useState<any>({});
+  const [template, setTemplate] = useState<any[]>([]);
   const sigRef = useRef<any>(null);
   const [signature, setSignature] = useState<string | null>(null);
 
@@ -120,54 +55,72 @@ export default function FicheInterventionModal({ visible, equipement, mission, f
         ip: equipement.ip || '',
       });
       setReponses(equipement.saved_reponses || {});
+      // Build the dynamic template for checklists based on market/site
+      const typeEq = equipement.type_equipement || 'AUTRE';
+      const checklistType = mission.checklist_type || 'MSANTE_STANDARD';
+      const isAMEE = checklistType === 'AMEE_MARRAKECH' || checklistType === 'AMEE_RABAT';
+      const feuilleAmee = feuille || '';
+      
+      let targetSchemaName = checklistType;
+      
+      // Override for Onduleur (always uses ONDULEUR schema regardless of market)
+      if (checklistType === 'ANCFCC' || typeEq === 'ONDULEUR') {
+        targetSchemaName = 'ONDULEUR';
+      } else if (isAMEE && feuilleAmee === 'MISE A JOUR') {
+        targetSchemaName = 'AMEE_MISE_A_JOUR';
+      } else if (isAMEE && feuilleAmee === 'AVANCEE') {
+        targetSchemaName = 'AMEE_AVANCEE';
+      }
+
+      // Fetch from local SQLite DB
+      try {
+        let schemaRow = null;
+        
+        // Si c'est un override explicite (ex: ONDULEUR), on cherche par nom en priorité
+        if (targetSchemaName !== checklistType) {
+          schemaRow = db.getFirstSync('SELECT schema_data FROM json_schemas WHERE nom = ?', [targetSchemaName]);
+        }
+        
+        // Sinon on cherche d'abord par site_id
+        if (!schemaRow && mission?.site_id) {
+          schemaRow = db.getFirstSync('SELECT schema_data FROM json_schemas WHERE site_id = ?', [mission.site_id]);
+          
+          // Si introuvable, on cherche par marche_id
+          if (!schemaRow) {
+            const siteInfo = db.getFirstSync('SELECT marche_id FROM sites WHERE id = ?', [mission.site_id]);
+            if (siteInfo && siteInfo.marche_id) {
+              schemaRow = db.getFirstSync('SELECT schema_data FROM json_schemas WHERE marche_id = ?', [siteInfo.marche_id]);
+            }
+          }
+        }
+        
+        // Enfin, fallback classique par nom
+        if (!schemaRow) {
+          schemaRow = db.getFirstSync('SELECT schema_data FROM json_schemas WHERE nom = ?', [targetSchemaName]);
+        }
+
+        if (schemaRow && schemaRow.schema_data) {
+           const parsed = typeof schemaRow.schema_data === 'string' ? JSON.parse(schemaRow.schema_data) : schemaRow.schema_data;
+           setTemplate(parsed);
+        } else {
+           // Fallback if not found
+           setTemplate([{ key: 'observation', label: 'Observation', options: ['OK', 'Non'] }]);
+        }
+      } catch(err) {
+        console.error("Erreur chargement schema:", err);
+        setTemplate([{ key: 'observation', label: 'Observation (Erreur chargement)', options: ['OK', 'Non'] }]);
+      }
     }
-  }, [equipement, visible]);
+  }, [equipement, visible, mission, feuille]);
 
   if (!equipement) return null;
 
   const typeEq = equipement.type_equipement || 'AUTRE';
-  const checklistType = mission.checklist_type || 'MSANTE_STANDARD';
   
   let templateKey = 'DEFAULT';
   if (typeEq === 'PC' || typeEq === 'PORTABLE' || typeEq === 'UC') templateKey = 'PC_PORTABLE';
   else if (typeEq === 'SERVEUR') templateKey = 'SERVEUR';
   else if (typeEq === 'IMPRIMANTE' || typeEq === 'SCANNER' || typeEq === 'PHOTOCOPIEUR') templateKey = 'IMPRIMANTE';
-
-  const isAMEE = checklistType === 'AMEE_MARRAKECH' || checklistType === 'AMEE_RABAT';
-  const feuilleAmee = feuille || '';
-
-  // Build the dynamic template for checklists based on market (except Onduleur which is fixed)
-  let template = [];
-  if (checklistType === 'ANCFCC' || typeEq === 'ONDULEUR') {
-    template = ONDULEUR_TEMPLATE;
-  } else if (isAMEE && feuilleAmee === 'MISE A JOUR') {
-    template = [
-      { key: 'nettoyage_disque', label: 'Nettoyage de disque', options: ['OK', 'NON'] },
-      { key: 'fichiers_temporaires', label: 'Fichiers temporaires', options: ['OK', 'NON'] },
-      { key: 'maj_windows', label: 'Mise à jour Windows', options: ['OK', 'NON'] }
-    ];
-  } else if (isAMEE && feuilleAmee === 'AVANCEE') {
-    template = [
-      { key: 'etat_systeme', label: 'État Système', options: ['ACTIVE', 'INACTIF'] },
-      { key: 'etat_antivirus', label: 'État Antivirus', options: ['ACTIVE', 'EXPIRE'] },
-      { key: 'maj', label: 'Mise à Jour', options: ['À JOUR', 'MANQUANTE'] }
-    ];
-  } else if (checklistType === 'ADM') {
-    const fields = CHECKLIST_FIELDS[checklistType] || ['observation'];
-    template = fields.map(f => ({
-      key: f,
-      label: FIELD_LABELS[f]?.label || f,
-      options: FIELD_LABELS[f]?.options || ['OK', 'Non']
-    }));
-    template = [...template, ...ADM_TEMPLATE];
-  } else {
-    const fields = CHECKLIST_FIELDS[checklistType] || ['observation'];
-    template = fields.map(f => ({
-      key: f,
-      label: FIELD_LABELS[f]?.label || f,
-      options: FIELD_LABELS[f]?.options || ['OK', 'Non']
-    }));
-  }
 
   const handleSave = () => {
     onSave(eqData, reponses);

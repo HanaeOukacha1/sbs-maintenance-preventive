@@ -17,6 +17,7 @@ class UserCreate(BaseModel):
     email: EmailStr           # Pydantic valide automatiquement le format email
     password: str
     role: RoleEnum = RoleEnum.TECHNICIEN
+    marche_id: int | None = None
 
     @field_validator("password")
     @classmethod
@@ -38,6 +39,7 @@ class UserUpdate(BaseModel):
     role: RoleEnum | None = None
     is_active: bool | None = None
     password: str | None = None
+    marche_id: int | None = None
 
     @field_validator("password")
     @classmethod
@@ -72,6 +74,8 @@ class UserResponse(BaseModel):
     email: str
     role: RoleEnum
     is_active: bool
+    marche_id: int | None = None
+    marche_nom: str | None = None
     created_at: datetime | None = None
 
     class Config:

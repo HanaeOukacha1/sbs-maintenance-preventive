@@ -76,7 +76,8 @@ const Sites = () => {
     try {
       setIsSubmittingMarche(true);
       setMarcheGlobalError('');
-      const response = await api.post('/marches/', marcheData);
+      const payload = { ...marcheData, client: marcheData.nom };
+      const response = await api.post('/marches/', payload);
       setMarches([...marches, response.data]);
       setMarcheData({ nom: '', description: '' });
       setIsMarcheModalOpen(false);
@@ -177,7 +178,7 @@ const Sites = () => {
                       </div>
                       <div className="marche-info">
                         <div className="marche-name">{marche.nom}</div>
-                        <div className="marche-desc">Client: {marche.client || '—'}</div>
+                        {marche.description && <div className="marche-desc">{marche.description}</div>}
                       </div>
                     </div>
                     <ChevronRight size={18} className="chevron" />

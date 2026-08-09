@@ -1,234 +1,113 @@
+# coding: utf-8
 import sys
 import os
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
+import json
 from sqlalchemy.orm import Session
-from app.db.database import SessionLocal
+from app.db.database import SessionLocal, engine
 from app.models.json_schema import JsonSchema
 
-SCHEMAS = [
-    {
-        "nom": "Schema ADM",
-        "type_equipement": "SERVEUR",
-        "description": "Schéma pour les serveurs DELL de ADM",
-        "schema_data": {
-            "type": "object",
-            "properties": {
-                "processeur": { "type": "string", "title": "Processeur" },
-                "memoire": { "type": "string", "title": "Composants – Mémoire en MB" },
-                "disque_c": { "type": "string", "title": "Composants - Taille du disque dur C en MB" },
-                "disque_d": { "type": "string", "title": "Composants - Taille du disque dur D en MB" },
-                "ip": { "type": "string", "title": "Réseau - IP" },
-                "etat_sw": { "type": "boolean", "title": "Etat Software (OK/NON)" },
-                "etat_hw": { "type": "boolean", "title": "Etat Hardware (OK/NON)" }
-            }
-        }
-    },
-    {
-        "nom": "Schema AMEE",
-        "type_equipement": "TOUS",
-        "description": "Schéma pour les PC, serveurs et imprimantes de l'AMEE",
-        "schema_data": {
-            "type": "object",
-            "properties": {
-                "utilisateur": { "type": "string", "title": "UTILISATEUR" },
-                "cpu": { "type": "string", "title": "CPU" },
-                "ram": { "type": "string", "title": "RAM" },
-                "stockage": { "type": "string", "title": "Stockage" },
-                "sysexp": { "type": "string", "title": "SYSEXP" },
-                "antivirus": { "type": "string", "title": "ANTIVIRUS" },
-                "etat_system": { "type": "string", "title": "Etat System", "enum": ["ACTIVE", "INACTIVE"] },
-                "etat_antivirus": { "type": "string", "title": "Etat Antivirus", "enum": ["ACTIF", "EXPIRE"] },
-                "mise_a_jour": { "type": "string", "title": "Mise à Jour", "enum": ["OK", "MANQUANTE"] }
-            }
-        }
-    },
-    {
-        "nom": "Schema ANCFCC",
-        "type_equipement": "ONDULEUR",
-        "description": "Schéma pour les onduleurs Riello de l'ANCFCC",
-        "schema_data": {
-            "type": "object",
-            "properties": {
-                "puissance": { "type": "string", "title": "Puissance de l'onduleur" },
-                "nb_batteries": { "type": "string", "title": "Nombre des batteries" },
-                "cab": { "type": "string", "title": "C à B" }
-            }
-        }
-    },
-    {
-        "nom": "Schema ANP",
-        "type_equipement": "TOUS",
-        "description": "Schéma général pour l'ANP",
-        "schema_data": {
-            "type": "object",
-            "properties": {
-                "emplacement": { "type": "string", "title": "Emplacement" },
-                "affectation": { "type": "string", "title": "Affectation / Utilisateur" },
-                "observation": { "type": "string", "title": "Observation" }
-            }
-        }
-    },
-    {
-        "nom": "Schema AOH",
-        "type_equipement": "TOUS",
-        "description": "Schéma général pour Al Omrane Holding",
-        "schema_data": {
-            "type": "object",
-            "properties": {
-                "emplacement": { "type": "string", "title": "Emplacement" },
-                "affectation": { "type": "string", "title": "Affectation / Utilisateur" },
-                "observation": { "type": "string", "title": "Observation" }
-            }
-        }
-    },
-    {
-        "nom": "Schema CNDH",
-        "type_equipement": "TOUS",
-        "description": "Schéma avec état pour CNDH",
-        "schema_data": {
-            "type": "object",
-            "properties": {
-                "entite": { "type": "string", "title": "ENTITE" },
-                "emplacement": { "type": "string", "title": "EMPLACEMENT" },
-                "affectation": { "type": "string", "title": "AFFECTATION" },
-                "etat": { "type": "string", "title": "ETAT", "enum": ["BON", "DEFAILLANT", "A REMPLACER"] },
-                "observation": { "type": "string", "title": "OBSERVATION" }
-            }
-        }
-    },
-    {
-        "nom": "Schema INPPLC",
-        "type_equipement": "TOUS",
-        "description": "Schéma spécifique pour INPPLC (basé sur la fiche Word imprimantes/scanners et infos globales)",
-        "schema_data": {
-            "type": "object",
-            "properties": {
-                "inventaire": { "type": "string", "title": "N° Inventaire" },
-                "op1": { "type": "boolean", "title": "Diagnostic du bon état de fonctionnement" },
-                "op2": { "type": "boolean", "title": "Dépoussiérage interne et externe" },
-                "op3": { "type": "boolean", "title": "Vérification des composants: rouleaux, four, kit de transfer" },
-                "op4": { "type": "boolean", "title": "Nettoyage extérieur" },
-                "op5": { "type": "boolean", "title": "Test d'impression" }
-            }
-        }
-    },
-    {
-        "nom": "Schema MARSA MAROC",
-        "type_equipement": "TOUS",
-        "description": "Schéma général pour Marsa Maroc",
-        "schema_data": {
-            "type": "object",
-            "properties": {
-                "emplacement": { "type": "string", "title": "Emplacement" },
-                "affectation": { "type": "string", "title": "Affectation / Utilisateur" },
-                "observation": { "type": "string", "title": "Observation" }
-            }
-        }
-    },
-    {
-        "nom": "Schema MHAI - PC / Serveur",
-        "type_equipement": "PC_SERVEUR",
-        "description": "Schéma MHAI pour les ordinateurs et serveurs",
-        "schema_data": {
-            "type": "object",
-            "properties": {
-                "inventaire": { "type": "string", "title": "N° Inventaire" },
-                "processeur": { "type": "string", "title": "Processeur" },
-                "ram": { "type": "string", "title": "Ram" },
-                "disque_dur": { "type": "string", "title": "Disque dur" },
-                "os": { "type": "string", "title": "Systéme d'exploitation" },
-                "office": { "type": "string", "title": "Microsoft Office" },
-                "antivirus": { "type": "string", "title": "Solution Antiviral" },
-                "op1": { "type": "boolean", "title": "Diagnostic du bon état de fonctionnement" },
-                "op2": { "type": "boolean", "title": "Dépoussiérage interne et externe" },
-                "op3": { "type": "boolean", "title": "Nettoyage extérieur" }
-            }
-        }
-    },
-    {
-        "nom": "Schema MHAI - Imprimante / Scanner",
-        "type_equipement": "IMPRIMANTE_SCANNER",
-        "description": "Schéma MHAI pour les équipements d'impression",
-        "schema_data": {
-            "type": "object",
-            "properties": {
-                "inventaire": { "type": "string", "title": "N° Inventaire" },
-                "op1": { "type": "boolean", "title": "Diagnostic du bon état de fonctionnement" },
-                "op2": { "type": "boolean", "title": "Dépoussiérage interne et externe" },
-                "op3": { "type": "boolean", "title": "Vérification des composants: rouleaux, four, kit de transfer" },
-                "op4": { "type": "boolean", "title": "Nettoyage extérieur" },
-                "op5": { "type": "boolean", "title": "Test d'impression" }
-            }
-        }
-    },
-    {
-        "nom": "Schema MSANTE",
-        "type_equipement": "TOUS",
-        "description": "Schéma avec état pour MSANTE",
-        "schema_data": {
-            "type": "object",
-            "properties": {
-                "entite": { "type": "string", "title": "ENTITE" },
-                "emplacement": { "type": "string", "title": "EMPLACEMENT" },
-                "affectation": { "type": "string", "title": "AFFECTATION" },
-                "etat": { "type": "string", "title": "ETAT", "enum": ["BON", "DEFAILLANT", "A REMPLACER"] },
-                "observation": { "type": "string", "title": "OBSERVATION" }
-            }
-        }
-    },
-    {
-        "nom": "Schema ONP",
-        "type_equipement": "TOUS",
-        "description": "Schéma général pour ONP",
-        "schema_data": {
-            "type": "object",
-            "properties": {
-                "emplacement": { "type": "string", "title": "Emplacement" },
-                "affectation": { "type": "string", "title": "Affectation / Utilisateur" },
-                "observation": { "type": "string", "title": "Observation" }
-            }
-        }
-    }
+db = SessionLocal()
+
+FIELD_LABELS = {
+    "etat_software": {"label": "État Software", "options": ["OK", "Non"]},
+    "etat_hardware": {"label": "État Hardware", "options": ["OK", "Non"]},
+    "etat":          {"label": "État Général", "options": ["OK", "Non"]},
+    "statut":        {"label": "Statut", "options": ["OK", "Non"]},
+    "observation":   {"label": "Observation", "options": ["BON", "DÉFAILLANT", "À RÉPARER"]},
+    "observation_cndh": {"label": "Observation", "options": ["Bon", "En panne", "En réparation"]},
+    "etat_msante":   {"label": "État", "options": ["BON", "EN PANNE", "À RÉPARER"]},
+}
+
+CHECKLIST_FIELDS = {
+    "ADM":             ["etat_software", "etat_hardware"],
+    "AMEE_MARRAKECH":  ["statut"],
+    "AMEE_RABAT":      ["statut"],
+    "ANCFCC":          [], 
+    "ANP":             ["etat"],
+    "AOH":             ["etat"],
+    "INPPLC":          ["observation"],
+    "MARSA_MAROC":     ["observation"],
+    "MHAI":            ["observation"],
+    "MSANTE_STANDARD": ["etat_msante"],
+    "MSANTE_CAPM":     ["etat_msante"],
+    "MSANTE_DPRF":     ["etat_msante"],
+    "ONP":             ["etat"],
+    "CNDH_G1":         ["observation_cndh"],
+    "CNDH_G2":         ["observation_cndh"],
+    "CNDH_SIEGE":      ["observation_cndh"],
+}
+
+ONDULEUR_TEMPLATE = [
+    {"key": "pt1", "label": "Vérification du matériel", "options": ["oui", "non"]},
+    {"key": "pt2", "label": "Contrôle des différents paramètres électriques en entrée/sortie", "options": ["oui", "non"]},
+    {"key": "pt3", "label": "Contrôle du bruit des différents composants mécaniques", "options": ["oui", "non"]},
+    {"key": "pt4", "label": "Test de simulation de fonctionnement du matériel (sur batteries, by-pass...)", "options": ["oui", "non"]},
+    {"key": "pt5", "label": "Vérification de la carte SNMP et la communication à distance", "options": ["oui", "non"]},
+    {"key": "pt6", "label": "Contrôle de l'ensemble des batteries", "options": ["oui", "non"]},
+    {"key": "pt7", "label": "Réparation de tout défaut constaté si nécessaire", "options": ["oui", "non"]},
+    {"key": "pt8", "label": "Ouvrir un incident (maintenance curative), en cas de panne matériel, en vue de : a. Réparation de tout défaut constaté b. Remplacement de tout composant reconnu défectueux pendant la visite", "options": ["oui", "non"]},
+    {"key": "pt9", "label": "Nettoyage et dépoussiérage", "options": ["oui", "non"]},
+    {"key": "pt10", "label": "Rédaction d'un rapport de synthèse à l'issue de la visite", "options": ["oui", "non"]},
 ]
 
+ADM_TEMPLATE = [
+    {"key": "adm1", "label": "Vérification des journaux d'événements (Event Logs)", "options": ["oui", "non"]},
+    {"key": "adm2", "label": "Contrôle des mises à jour système (OS)", "options": ["oui", "non"]},
+    {"key": "adm3", "label": "Vérification de l'état de la mémoire (RAM)", "options": ["oui", "non"]},
+    {"key": "adm4", "label": "Vérification de l'état des disques (Espace & SMART)", "options": ["oui", "non"]},
+    {"key": "adm5", "label": "Contrôle de la connectivité réseau", "options": ["oui", "non"]},
+    {"key": "adm6", "label": "Vérification de l'état des sauvegardes", "options": ["oui", "non"]},
+    {"key": "adm7", "label": "Contrôle des paramètres de sécurité (Antivirus/Firewall)", "options": ["oui", "non"]},
+    {"key": "adm8", "label": "Nettoyage physique (dépoussiérage) si nécessaire", "options": ["oui", "non"]},
+    {"key": "adm9", "label": "Vérification du fonctionnement des ventilateurs", "options": ["oui", "non"]},
+    {"key": "adm10", "label": "Rédaction d'un rapport de synthèse de l'intervention", "options": ["oui", "non"]},
+]
 
-def seed_schemas():
-    db: Session = SessionLocal()
-    try:
-        print("=" * 60)
-        print("SEED JSON SCHEMAS (Formulaires Dynamiques - 1 par marché)")
-        print("=" * 60)
+AMEE_MISE_A_JOUR = [
+    {"key": "nettoyage_disque", "label": "Nettoyage de disque", "options": ["OK", "NON"]},
+    {"key": "fichiers_temporaires", "label": "Fichiers temporaires", "options": ["OK", "NON"]},
+    {"key": "maj_windows", "label": "Mise à jour Windows", "options": ["OK", "NON"]}
+]
 
-        count = 0
-        for s_data in SCHEMAS:
-            # Vérifier si le schéma existe déjà
-            existing = db.query(JsonSchema).filter(JsonSchema.nom == s_data["nom"]).first()
-            if not existing:
-                schema = JsonSchema(
-                    nom=s_data["nom"],
-                    type_equipement=s_data["type_equipement"],
-                    version=1,
-                    schema_data=s_data["schema_data"],
-                    is_active=True,
-                    description=s_data["description"]
-                )
-                db.add(schema)
-                count += 1
-                print(f"  ✅ Créé : {s_data['nom']}")
-            else:
-                print(f"  ℹ️  Déjà existant : {s_data['nom']}")
+AMEE_AVANCEE = [
+    {"key": "etat_systeme", "label": "État Système", "options": ["ACTIVE", "INACTIF"]},
+    {"key": "etat_antivirus", "label": "État Antivirus", "options": ["ACTIVE", "EXPIRE"]},
+    {"key": "maj", "label": "Mise à Jour", "options": ["À JOUR", "MANQUANTE"]}
+]
 
-        db.commit()
-        print("=" * 60)
-        print(f"✅ Terminé ! {count} nouveaux schémas insérés.")
-        print("=" * 60)
-    except Exception as e:
-        db.rollback()
-        print(f"❌ Erreur : {e}")
-    finally:
-        db.close()
+def create_schema(nom, type_eq, schema_data):
+    # Chercher si le schéma existe déjà
+    existing = db.query(JsonSchema).filter(JsonSchema.nom == nom).first()
+    if existing:
+        existing.schema_data = schema_data
+        existing.type_equipement = type_eq
+    else:
+        new_schema = JsonSchema(nom=nom, type_equipement=type_eq, version=1, schema_data=schema_data, is_active=True)
+        db.add(new_schema)
 
+def run():
+    # 1. Onduleur
+    create_schema("ONDULEUR", "ONDULEUR", ONDULEUR_TEMPLATE)
+    
+    # 2. AMEE Spécifiques
+    create_schema("AMEE_MISE_A_JOUR", "PC/SERVEUR", AMEE_MISE_A_JOUR)
+    create_schema("AMEE_AVANCEE", "PC/SERVEUR", AMEE_AVANCEE)
+
+    # 3. Les autres checklists par défaut
+    for key, fields in CHECKLIST_FIELDS.items():
+        template = []
+        for f in fields:
+            label = FIELD_LABELS.get(f, {}).get("label", f)
+            options = FIELD_LABELS.get(f, {}).get("options", ["OK", "Non"])
+            template.append({"key": f, "label": label, "options": options})
+        
+        if key == "ADM":
+            template.extend(ADM_TEMPLATE)
+            
+        create_schema(key, "GLOBAL", template)
+
+    db.commit()
+    print("Seed JSON Schemas terminé !")
 
 if __name__ == "__main__":
-    seed_schemas()
+    run()

@@ -11,7 +11,7 @@ class SiteCreate(BaseModel):
     adresse: Optional[str] = None
     ville: Optional[str] = None
     description: Optional[str] = None
-    checklist_type: Optional[ChecklistTypeEnum] = None
+    checklist_type: Optional[str] = None
     feuilles: Optional[List[str]] = None   # ex: ["PC", "MàJ Windows", "Imp & MFP", "Data Center"]
 
 
@@ -22,7 +22,7 @@ class SiteUpdate(BaseModel):
     ville: Optional[str] = None
     description: Optional[str] = None
     is_active: Optional[bool] = None
-    checklist_type: Optional[ChecklistTypeEnum] = None
+    checklist_type: Optional[str] = None
     feuilles: Optional[List[str]] = None
 
 
@@ -35,7 +35,7 @@ class SiteResponse(BaseModel):
     ville: Optional[str] = None
     description: Optional[str] = None
     is_active: bool
-    checklist_type: Optional[ChecklistTypeEnum] = None
+    checklist_type: Optional[str] = None
     feuilles: Optional[List[str]] = None
     created_at: Optional[datetime] = None
 
