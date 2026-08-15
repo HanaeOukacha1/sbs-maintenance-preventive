@@ -116,6 +116,8 @@ export default function FicheInterventionModal({ visible, equipement, mission, f
   if (!equipement) return null;
 
   const typeEq = equipement.type_equipement || 'AUTRE';
+  const checklistType = mission?.checklist_type || 'MSANTE_STANDARD';
+  const feuilleAmee = feuille || '';
   
   let templateKey = 'DEFAULT';
   if (typeEq === 'PC' || typeEq === 'PORTABLE' || typeEq === 'UC') templateKey = 'PC_PORTABLE';
@@ -192,159 +194,199 @@ export default function FicheInterventionModal({ visible, equipement, mission, f
 
               // ── Champs communs à presque tous les marchés ──
               const CommonFields = () => (<>
-                <F label="Désignation / Type" k="designation" placeholder="Ex: PC Portable, Imprimante..." />
-                <Row>
-                  <Flex label="Marque" k="marque" placeholder="Ex: Dell, HP..." />
-                  <Flex label="Modèle" k="modele" placeholder="Ex: Latitude 5410" />
-                </Row>
-                <Row>
-                  <Flex label="N° Série" k="numero_serie" placeholder="N° de série" />
-                  <Flex label="N° Inventaire" k="numero_inventaire" placeholder="N° inventaire" />
-                </Row>
+                {F({ label: 'Désignation / Type', k: 'designation', placeholder: 'Ex: PC Portable, Imprimante...' })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'Marque', k: 'marque', placeholder: 'Ex: Dell, HP...' })}
+                  {Flex({ label: 'Modèle', k: 'modele', placeholder: 'Ex: Latitude 5410' })}
+                
+</> })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'N° Série', k: 'numero_serie', placeholder: 'N° de série' })}
+                  {Flex({ label: 'N° Inventaire', k: 'numero_inventaire', placeholder: 'N° inventaire' })}
+                
+</> })}
               </>);
 
               // ── Champs PC/UC (CPU, RAM, stockage, OS) ──
               const PcFields = () => (<>
-                <Row>
-                  <Flex label="CPU / Processeur" k="cpu" placeholder="Ex: Core i5 10gen" />
-                  <Flex label="RAM" k="ram" placeholder="Ex: 8 Go" />
-                </Row>
-                <Row>
-                  <Flex label="Disque Dur / Stockage" k="disque_dur" placeholder="Ex: 256 Go SSD" />
-                  <Flex label="Système d'Exploitation" k="systeme_exploitation" placeholder="Ex: Win 11 Pro" />
-                </Row>
+                {Row({ children: <>
+
+                  {Flex({ label: 'CPU / Processeur', k: 'cpu', placeholder: 'Ex: Core i5 10gen' })}
+                  {Flex({ label: 'RAM', k: 'ram', placeholder: 'Ex: 8 Go' })}
+                
+</> })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'Disque Dur / Stockage', k: 'disque_dur', placeholder: 'Ex: 256 Go SSD' })}
+                  {Flex({ label: 'Système d\'Exploitation', k: 'systeme_exploitation', placeholder: 'Ex: Win 11 Pro' })}
+                
+</> })}
               </>);
 
               // ── AOH ──
               if (checklistType === 'AOH') return (<>
-                <CommonFields />
+                {CommonFields()}
               </>);
 
               // ── AMEE Marrakech ──
               if (checklistType === 'AMEE_MARRAKECH') {
                 if (feuilleAmee === 'DATA CENTER') return (<>
-                  <F label="Type" k="designation" placeholder="Serveur, Switch..." />
-                  <Row>
-                    <Flex label="Marque" k="marque" placeholder="Ex: Lenovo" />
-                    <Flex label="Modèle" k="modele" placeholder="Ex: SR550" />
-                  </Row>
-                  <F label="N° Série" k="numero_serie" placeholder="N° de série" />
+                  {F({ label: 'Type', k: 'designation', placeholder: 'Serveur, Switch...' })}
+                  {Row({ children: <>
+
+                    {Flex({ label: 'Marque', k: 'marque', placeholder: 'Ex: Lenovo' })}
+                    {Flex({ label: 'Modèle', k: 'modele', placeholder: 'Ex: SR550' })}
+                  
+</> })}
+                  {F({ label: 'N° Série', k: 'numero_serie', placeholder: 'N° de série' })}
                 </>);
                 if (feuilleAmee === 'UC') return (<>
-                  <F label="Utilisateur" k="utilisateur_nom" placeholder="Nom de l'utilisateur" />
-                  <F label="Type" k="designation" placeholder="UC, PC Portable, Écran..." />
-                  <Row>
-                    <Flex label="Marque" k="marque" placeholder="Ex: Dell" />
-                    <Flex label="Modèle" k="modele" placeholder="Ex: Optiplex 9020" />
-                  </Row>
-                  <Row>
-                    <Flex label="N° Série" k="numero_serie" placeholder="S/N" />
-                    <Flex label="N° Inventaire" k="numero_inventaire" placeholder="N° Inv" />
-                  </Row>
-                  <PcFields />
+                  {F({ label: 'Utilisateur', k: 'utilisateur_nom', placeholder: 'Nom de l\'utilisateur' })}
+                  {F({ label: 'Type', k: 'designation', placeholder: 'UC, PC Portable, Écran...' })}
+                  {Row({ children: <>
+
+                    {Flex({ label: 'Marque', k: 'marque', placeholder: 'Ex: Dell' })}
+                    {Flex({ label: 'Modèle', k: 'modele', placeholder: 'Ex: Optiplex 9020' })}
+                  
+</> })}
+                  {Row({ children: <>
+
+                    {Flex({ label: 'N° Série', k: 'numero_serie', placeholder: 'S/N' })}
+                    {Flex({ label: 'N° Inventaire', k: 'numero_inventaire', placeholder: 'N° Inv' })}
+                  
+</> })}
+                  {PcFields({})}
                 </>);
                 if (feuilleAmee === 'MISE A JOUR') return (<>
-                  <F label="Personne / Utilisateur" k="utilisateur_nom" placeholder="Nom" />
-                  <F label="Type de poste" k="designation" placeholder="UC, PC Portable..." />
+                  {F({ label: 'Personne / Utilisateur', k: 'utilisateur_nom', placeholder: 'Nom' })}
+                  {F({ label: 'Type de poste', k: 'designation', placeholder: 'UC, PC Portable...' })}
                 </>);
                 if (feuilleAmee === 'IMPRIMANTE ET MFP') return (<>
-                  <F label="Type" k="designation" placeholder="Imprimante multifonction..." />
-                  <Row>
-                    <Flex label="Modèle" k="modele" placeholder="Ex: E-Studio 3505AC" />
-                    <Flex label="Emplacement" k="emplacement" placeholder="Ex: RDC" />
-                  </Row>
-                  <F label="N° Série" k="numero_serie" placeholder="N° de série" />
+                  {F({ label: 'Type', k: 'designation', placeholder: 'Imprimante multifonction...' })}
+                  {Row({ children: <>
+
+                    {Flex({ label: 'Modèle', k: 'modele', placeholder: 'Ex: E-Studio 3505AC' })}
+                    {Flex({ label: 'Emplacement', k: 'emplacement', placeholder: 'Ex: RDC' })}
+                  
+</> })}
+                  {F({ label: 'N° Série', k: 'numero_serie', placeholder: 'N° de série' })}
                 </>);
               }
 
               // ── AMEE Rabat ──
               if (checklistType === 'AMEE_RABAT') {
                 if (feuilleAmee === 'PC') return (<>
-                  <F label="Personne / Utilisateur" k="utilisateur_nom" placeholder="Nom" />
-                  <F label="Type" k="designation" placeholder="PC Portable, Écran..." />
-                  <Row>
-                    <Flex label="Marque" k="marque" placeholder="Ex: Dell" />
-                    <Flex label="Modèle" k="modele" placeholder="Désignation" />
-                  </Row>
-                  <Row>
-                    <Flex label="N° Série" k="numero_serie" placeholder="S/N" />
-                    <Flex label="Système d'Exploitation" k="systeme_exploitation" placeholder="Ex: Win 11" />
-                  </Row>
-                  <PcFields />
+                  {F({ label: 'Personne / Utilisateur', k: 'utilisateur_nom', placeholder: 'Nom' })}
+                  {F({ label: 'Type', k: 'designation', placeholder: 'PC Portable, Écran...' })}
+                  {Row({ children: <>
+
+                    {Flex({ label: 'Marque', k: 'marque', placeholder: 'Ex: Dell' })}
+                    {Flex({ label: 'Modèle', k: 'modele', placeholder: 'Désignation' })}
+                  
+</> })}
+                  {Row({ children: <>
+
+                    {Flex({ label: 'N° Série', k: 'numero_serie', placeholder: 'S/N' })}
+                    {Flex({ label: 'Système d\'Exploitation', k: 'systeme_exploitation', placeholder: 'Ex: Win 11' })}
+                  
+</> })}
+                  {PcFields({})}
                 </>);
                 if (feuilleAmee === 'MISE A JOUR') return (<>
-                  <F label="Personne / Utilisateur" k="utilisateur_nom" placeholder="Nom" />
-                  <F label="Type de poste" k="designation" placeholder="UC, PC Portable..." />
+                  {F({ label: 'Personne / Utilisateur', k: 'utilisateur_nom', placeholder: 'Nom' })}
+                  {F({ label: 'Type de poste', k: 'designation', placeholder: 'UC, PC Portable...' })}
                 </>);
                 if (feuilleAmee === 'IMP ET MFP RESEAUX') return (<>
-                  <F label="Type" k="designation" placeholder="Imprimante, Fax, Scanner..." />
-                  <Row>
-                    <Flex label="Marque" k="marque" placeholder="Ex: Xerox" />
-                    <Flex label="Modèle" k="modele" placeholder="Ex: VersaLink C625" />
-                  </Row>
-                  <F label="N° Série" k="numero_serie" placeholder="S/N" />
+                  {F({ label: 'Type', k: 'designation', placeholder: 'Imprimante, Fax, Scanner...' })}
+                  {Row({ children: <>
+
+                    {Flex({ label: 'Marque', k: 'marque', placeholder: 'Ex: Xerox' })}
+                    {Flex({ label: 'Modèle', k: 'modele', placeholder: 'Ex: VersaLink C625' })}
+                  
+</> })}
+                  {F({ label: 'N° Série', k: 'numero_serie', placeholder: 'S/N' })}
                 </>);
                 if (feuilleAmee === 'DATA CENTER') return (<>
-                  <F label="Type" k="designation" placeholder="Serveur, KVM..." />
-                  <Row>
-                    <Flex label="Marque" k="marque" placeholder="Ex: Lenovo, IBM" />
-                    <Flex label="Modèle" k="modele" placeholder="Ex: ThinkSystem SR630" />
-                  </Row>
-                  <F label="N° Série" k="numero_serie" placeholder="N° de série" />
+                  {F({ label: 'Type', k: 'designation', placeholder: 'Serveur, KVM...' })}
+                  {Row({ children: <>
+
+                    {Flex({ label: 'Marque', k: 'marque', placeholder: 'Ex: Lenovo, IBM' })}
+                    {Flex({ label: 'Modèle', k: 'modele', placeholder: 'Ex: ThinkSystem SR630' })}
+                  
+</> })}
+                  {F({ label: 'N° Série', k: 'numero_serie', placeholder: 'N° de série' })}
                 </>);
               }
 
               // ── INPPLC ──
               if (checklistType === 'INPPLC') return (<>
-                <Row>
-                  <Flex label="Famille / Type" k="designation" placeholder="Imprimante, PC..." />
-                  <Flex label="Marque" k="marque" placeholder="Ex: HP" />
-                </Row>
-                <Row>
-                  <Flex label="Modèle" k="modele" placeholder="Ex: LaserJet" />
-                  <Flex label="N° Série" k="numero_serie" placeholder="S/N" />
-                </Row>
+                {Row({ children: <>
+
+                  {Flex({ label: 'Famille / Type', k: 'designation', placeholder: 'Imprimante, PC...' })}
+                  {Flex({ label: 'Marque', k: 'marque', placeholder: 'Ex: HP' })}
+                
+</> })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'Modèle', k: 'modele', placeholder: 'Ex: LaserJet' })}
+                  {Flex({ label: 'N° Série', k: 'numero_serie', placeholder: 'S/N' })}
+                
+</> })}
               </>);
 
               // ── MARSA MAROC ──
               if (checklistType === 'MARSA_MAROC') return (<>
-                <Row>
-                  <Flex label="Direction" k="direction" placeholder="Direction" />
-                  <Flex label="Bureau" k="bureau" placeholder="Bureau" />
-                </Row>
-                <Row>
-                  <Flex label="Famille / Type" k="designation" placeholder="Ex: PC, Imprimante" />
-                  <Flex label="Marque" k="marque" placeholder="Ex: Dell" />
-                </Row>
-                <Row>
-                  <Flex label="Article / Modèle" k="modele" placeholder="Ex: Latitude 5410" />
-                  <Flex label="N° Série" k="numero_serie" placeholder="S/N" />
-                </Row>
-                <F label="Nom et Prénom utilisateur" k="utilisateur_nom" placeholder="Ex: M. Alaoui" />
-                <PcFields />
+                {Row({ children: <>
+
+                  {Flex({ label: 'Direction', k: 'direction', placeholder: 'Direction' })}
+                  {Flex({ label: 'Bureau', k: 'bureau', placeholder: 'Bureau' })}
+                
+</> })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'Famille / Type', k: 'designation', placeholder: 'Ex: PC, Imprimante' })}
+                  {Flex({ label: 'Marque', k: 'marque', placeholder: 'Ex: Dell' })}
+                
+</> })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'Article / Modèle', k: 'modele', placeholder: 'Ex: Latitude 5410' })}
+                  {Flex({ label: 'N° Série', k: 'numero_serie', placeholder: 'S/N' })}
+                
+</> })}
+                {F({ label: 'Nom et Prénom utilisateur', k: 'utilisateur_nom', placeholder: 'Ex: M. Alaoui' })}
+                {PcFields({})}
               </>);
 
               // ── MHAI ──
               if (checklistType === 'MHAI') return (<>
-                <Row>
-                  <Flex label="Matériel / Type" k="designation" placeholder="Ex: PC, Onduleur" />
-                  <Flex label="Marque" k="marque" placeholder="Ex: Dell" />
-                </Row>
-                <Row>
-                  <Flex label="Modèle" k="modele" placeholder="Ex: Optiplex" />
-                  <Flex label="N° Série" k="numero_serie" placeholder="S/N" />
-                </Row>
-                <F label="N° Inventaire" k="numero_inventaire" placeholder="N° Inventaire" />
+                {Row({ children: <>
+
+                  {Flex({ label: 'Matériel / Type', k: 'designation', placeholder: 'Ex: PC, Onduleur' })}
+                  {Flex({ label: 'Marque', k: 'marque', placeholder: 'Ex: Dell' })}
+                
+</> })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'Modèle', k: 'modele', placeholder: 'Ex: Optiplex' })}
+                  {Flex({ label: 'N° Série', k: 'numero_serie', placeholder: 'S/N' })}
+                
+</> })}
+                {F({ label: 'N° Inventaire', k: 'numero_inventaire', placeholder: 'N° Inventaire' })}
               </>);
 
               // ── ONP ──
               if (checklistType === 'ONP') return (<>
-                <F label="Désignation / Type" k="designation" placeholder="Ex: PC Portable, Imprimante..." />
-                <Row>
-                  <Flex label="Marque" k="marque" placeholder="Ex: Dell, HP..." />
-                  <Flex label="Modèle" k="modele" placeholder="Ex: Latitude 5410" />
-                </Row>
-                <F label="N° Série" k="numero_serie" placeholder="N° de série" />
+                {F({ label: 'Désignation / Type', k: 'designation', placeholder: 'Ex: PC Portable, Imprimante...' })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'Marque', k: 'marque', placeholder: 'Ex: Dell, HP...' })}
+                  {Flex({ label: 'Modèle', k: 'modele', placeholder: 'Ex: Latitude 5410' })}
+                
+</> })}
+                {F({ label: 'N° Série', k: 'numero_serie', placeholder: 'N° de série' })}
               </>);
 
               // ── CNDH ──
@@ -362,128 +404,162 @@ export default function FicheInterventionModal({ visible, equipement, mission, f
                   site.includes('SIÈGE');
 
                 return (<>
-                  <F label="Entité / Site" k="direction" placeholder="Direction ou entité" />
+                  {F({ label: 'Entité / Site', k: 'direction', placeholder: 'Direction ou entité' })}
                   {!hideEmplacementAffectation && (
                     <>
-                      <F label="Emplacement / Bureau" k="bureau" placeholder="Emplacement" />
-                      <F label="Affectation / Utilisateur" k="utilisateur_nom" placeholder="Nom de l'utilisateur" />
+                      {F({ label: 'Emplacement / Bureau', k: 'bureau', placeholder: 'Emplacement' })}
+                      {F({ label: 'Affectation / Utilisateur', k: 'utilisateur_nom', placeholder: 'Nom de l\'utilisateur' })}
                     </>
                   )}
-                  <F label="Article / Type" k="designation" placeholder="Ex: PC, Imprimante" />
-                  <Row>
-                    <Flex label="Marque" k="marque" placeholder="Ex: Dell" />
-                    <Flex label="Modèle" k="modele" placeholder="Ex: Latitude" />
-                  </Row>
-                  <F label="N° Série" k="numero_serie" placeholder="S/N" />
+                  {F({ label: 'Article / Type', k: 'designation', placeholder: 'Ex: PC, Imprimante' })}
+                  {Row({ children: <>
+
+                    {Flex({ label: 'Marque', k: 'marque', placeholder: 'Ex: Dell' })}
+                    {Flex({ label: 'Modèle', k: 'modele', placeholder: 'Ex: Latitude' })}
+                  
+</> })}
+                  {F({ label: 'N° Série', k: 'numero_serie', placeholder: 'S/N' })}
                 </>);
               }
 
               // ── INPPLC ──
               if (checklistType === 'INPPLC') return (<>
-                <F label="Famille / Type" k="designation" placeholder="Ex: PC Portable, Imprimante..." />
-                <Row>
-                  <Flex label="Marque" k="marque" placeholder="Ex: Dell, HP..." />
-                  <Flex label="Modèle" k="modele" placeholder="Ex: Latitude 5410" />
-                </Row>
-                <F label="N° Série" k="numero_serie" placeholder="N° de série" />
+                {F({ label: 'Famille / Type', k: 'designation', placeholder: 'Ex: PC Portable, Imprimante...' })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'Marque', k: 'marque', placeholder: 'Ex: Dell, HP...' })}
+                  {Flex({ label: 'Modèle', k: 'modele', placeholder: 'Ex: Latitude 5410' })}
+                
+</> })}
+                {F({ label: 'N° Série', k: 'numero_serie', placeholder: 'N° de série' })}
               </>);
 
               // ── MARSA MAROC ──
               if (checklistType === 'MARSA_MAROC') return (<>
-                <F label="Direction" k="direction" placeholder="Direction" />
-                <Row>
-                  <Flex label="Bureau" k="bureau" placeholder="Emplacement" />
-                  <Flex label="Nom et Prénom" k="utilisateur_nom" placeholder="Utilisateur" />
-                </Row>
-                <F label="Famille / Type" k="designation" placeholder="Ex: PC PORTABLE" />
-                <Row>
-                  <Flex label="Marque" k="marque" placeholder="Ex: DELL" />
-                  <Flex label="Modèle (Article)" k="modele" placeholder="Ex: 5570" />
-                </Row>
-                <F label="N° Série" k="numero_serie" placeholder="N° de série" />
+                {F({ label: 'Direction', k: 'direction', placeholder: 'Direction' })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'Bureau', k: 'bureau', placeholder: 'Emplacement' })}
+                  {Flex({ label: 'Nom et Prénom', k: 'utilisateur_nom', placeholder: 'Utilisateur' })}
+                
+</> })}
+                {F({ label: 'Famille / Type', k: 'designation', placeholder: 'Ex: PC PORTABLE' })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'Marque', k: 'marque', placeholder: 'Ex: DELL' })}
+                  {Flex({ label: 'Modèle (Article)', k: 'modele', placeholder: 'Ex: 5570' })}
+                
+</> })}
+                {F({ label: 'N° Série', k: 'numero_serie', placeholder: 'N° de série' })}
                 {templateKey === 'PC_PORTABLE' && (
                   <>
-                    <Row>
-                      <Flex label="Processeur" k="cpu" placeholder="Ex: i5" />
-                      <Flex label="RAM" k="ram" placeholder="Ex: 8GB" />
-                    </Row>
-                    <Row>
-                      <Flex label="Disque Dur" k="disque_dur" placeholder="Ex: 256GB SSD" />
-                      <Flex label="Système d'expl." k="systeme_exploitation" placeholder="Ex: Win 10" />
-                    </Row>
+                    {Row({ children: <>
+
+                      {Flex({ label: 'Processeur', k: 'cpu', placeholder: 'Ex: i5' })}
+                      {Flex({ label: 'RAM', k: 'ram', placeholder: 'Ex: 8GB' })}
+                    
+</> })}
+                    {Row({ children: <>
+
+                      {Flex({ label: 'Disque Dur', k: 'disque_dur', placeholder: 'Ex: 256GB SSD' })}
+                      {Flex({ label: 'Système d\'expl.', k: 'systeme_exploitation', placeholder: 'Ex: Win 10' })}
+                    
+</> })}
                   </>
                 )}
               </>);
 
               // ── ADM ──
               if (checklistType === 'ADM') return (<>
-                <F label="Désignation" k="designation" placeholder="Ex: Serveur, Firewall..." />
-                <Row>
-                  <Flex label="Fabricant" k="marque" placeholder="Ex: HP, Dell" />
-                  <Flex label="Modèle" k="modele" placeholder="Ex: ProLiant DL380" />
-                </Row>
-                <Row>
-                  <Flex label="N° Série" k="numero_serie" placeholder="S/N" />
-                  <Flex label="IP Réseau" k="ip" placeholder="Ex: 192.168.1.10" />
-                </Row>
-                <PcFields />
+                {F({ label: 'Désignation', k: 'designation', placeholder: 'Ex: Serveur, Firewall...' })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'Fabricant', k: 'marque', placeholder: 'Ex: HP, Dell' })}
+                  {Flex({ label: 'Modèle', k: 'modele', placeholder: 'Ex: ProLiant DL380' })}
+                
+</> })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'N° Série', k: 'numero_serie', placeholder: 'S/N' })}
+                  {Flex({ label: 'IP Réseau', k: 'ip', placeholder: 'Ex: 192.168.1.10' })}
+                
+</> })}
+                {PcFields({})}
               </>);
 
               // ── ANP ──
               if (checklistType === 'ANP') return (<>
-                <F label="Famille / Type" k="designation" placeholder="Ex: PC Bureau" />
-                <Row>
-                  <Flex label="Marque" k="marque" placeholder="Ex: HP, Dell" />
-                  <Flex label="Modèle" k="modele" placeholder="Modèle exact" />
-                </Row>
-                <F label="N° Série" k="numero_serie" placeholder="S/N de l'équipement" />
+                {F({ label: 'Famille / Type', k: 'designation', placeholder: 'Ex: PC Bureau' })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'Marque', k: 'marque', placeholder: 'Ex: HP, Dell' })}
+                  {Flex({ label: 'Modèle', k: 'modele', placeholder: 'Modèle exact' })}
+                
+</> })}
+                {F({ label: 'N° Série', k: 'numero_serie', placeholder: 'S/N de l\'équipement' })}
               </>);
 
               // ── ANCFCC / ONDULEUR ──
               if (checklistType === 'ANCFCC' || typeEq === 'ONDULEUR') return (<>
-                <Row>
-                  <Flex label="Organisme" k="organisme" placeholder="Ex: ANCFCC" />
-                  <Flex label="Puissance de l'onduleur" k="puissance_kva" placeholder="Ex: 15 KVA" />
-                </Row>
-                <Row>
-                  <Flex label="Zone" k="zone" placeholder="Ex: SUD" />
-                  <Flex label="Nombre des batteries" k="nb_batteries" placeholder="Ex: 32" numeric />
-                </Row>
-                <Row>
-                  <Flex label="Ville" k="ville" placeholder="Ex: AGADIR" />
-                  <Flex label="Marque/modèle" k="marque" placeholder="Ex: Riello 15 KVA" />
-                </Row>
-                <Row>
-                  <Flex label="Établissement" k="etablissement" placeholder="Ex: CADASTRE" />
-                  <Flex label="Site" k="nom_site" placeholder="Nom du site" />
-                </Row>
-                <Row>
-                  <Flex label="N° Série" k="numero_serie" placeholder="N° de série" />
-                  <Flex label="C à B" k="capacite_batteries" placeholder="Capacité batteries" />
-                </Row>
+                {Row({ children: <>
+
+                  {Flex({ label: 'Organisme', k: 'organisme', placeholder: 'Ex: ANCFCC' })}
+                  {Flex({ label: 'Puissance de l\'onduleur', k: 'puissance_kva', placeholder: 'Ex: 15 KVA' })}
+                
+</> })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'Zone', k: 'zone', placeholder: 'Ex: SUD' })}
+                  {Flex({ label: 'Nombre des batteries', k: 'nb_batteries', placeholder: 'Ex: 32', numeric: true })}
+                
+</> })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'Ville', k: 'ville', placeholder: 'Ex: AGADIR' })}
+                  {Flex({ label: 'Marque/modèle', k: 'marque', placeholder: 'Ex: Riello 15 KVA' })}
+                
+</> })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'Établissement', k: 'etablissement', placeholder: 'Ex: CADASTRE' })}
+                  {Flex({ label: 'Site', k: 'nom_site', placeholder: 'Nom du site' })}
+                
+</> })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'N° Série', k: 'numero_serie', placeholder: 'N° de série' })}
+                  {Flex({ label: 'C à B', k: 'capacite_batteries', placeholder: 'Capacité batteries' })}
+                
+</> })}
               </>);
 
-              // ── MSANTE CAPM / DPRF / SIGNATURE ──
-              if (checklistType === 'MSANTE_CAPM' || checklistType === 'MSANTE_SIGNATURE' || checklistType === 'MSANTE_DPRF') return (<>
-                <F label="Désignation / Type" k="designation" placeholder="Ex: PC Portable, Imprimante..." />
-                <Row>
-                  <Flex label="Marque" k="marque" placeholder="Ex: Dell, HP..." />
-                  <Flex label="Modèle (Article)" k="modele" placeholder="Ex: Latitude 5410" />
-                </Row>
-                <Row>
-                  <Flex label="N° Série" k="numero_serie" placeholder="N° de série" />
-                  <Flex label="Utilisateur" k="utilisateur_nom" placeholder="Nom d'utilisateur" />
-                </Row>
+              // ── MSANTE CAPM / DPRF (Compta) / SIGNATURE ──
+              if (checklistType === 'MSANTE_CAPM' || checklistType === 'MSANTE_SIGNATURE' || (checklistType === 'MSANTE_DPRF' && feuilleAmee.toUpperCase() === 'COMPTABILITE')) return (<>
+                {F({ label: 'Désignation / Type', k: 'designation', placeholder: 'Ex: PC Portable, Imprimante...' })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'Marque', k: 'marque', placeholder: 'Ex: Dell, HP...' })}
+                  {Flex({ label: 'Modèle (Article)', k: 'modele', placeholder: 'Ex: Latitude 5410' })}
+                
+</> })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'N° Série', k: 'numero_serie', placeholder: 'N° de série' })}
+                  {Flex({ label: 'Utilisateur', k: 'utilisateur_nom', placeholder: 'Nom d\'utilisateur' })}
+                
+</> })}
               </>);
 
               // ── MSANTE (défaut) ──
               return (<>
-                <F label="Désignation / Type" k="designation" placeholder="Ex: PC Portable, Imprimante..." />
-                <Row>
-                  <Flex label="Marque" k="marque" placeholder="Ex: Dell, HP..." />
-                  <Flex label="Modèle" k="modele" placeholder="Ex: Latitude 5410" />
-                </Row>
-                <F label="N° Série" k="numero_serie" placeholder="N° de série" />
+                {F({ label: 'Désignation / Type', k: 'designation', placeholder: 'Ex: PC Portable, Imprimante...' })}
+                {Row({ children: <>
+
+                  {Flex({ label: 'Marque', k: 'marque', placeholder: 'Ex: Dell, HP...' })}
+                  {Flex({ label: 'Modèle', k: 'modele', placeholder: 'Ex: Latitude 5410' })}
+                
+</> })}
+                {F({ label: 'N° Série', k: 'numero_serie', placeholder: 'N° de série' })}
               </>);
             })()}
           </View>
@@ -543,7 +619,7 @@ export default function FicheInterventionModal({ visible, equipement, mission, f
             )}
           </View>
 
-          {(checklistType === 'MSANTE_CAPM' || checklistType === 'MSANTE_DPRF' || checklistType === 'MSANTE_SIGNATURE') && (
+          {(checklistType === 'MSANTE_CAPM' || (checklistType === 'MSANTE_DPRF' && feuilleAmee.toUpperCase() === 'COMPTABILITE') || checklistType === 'MSANTE_SIGNATURE') && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>3. Signature Utilisateur</Text>
               <Text style={styles.label}>Signature (Appuyez sur Confirmer après avoir signé)</Text>

@@ -9,10 +9,10 @@ import syncService from '../../services/syncService';
 import db from '../../services/dbService';
 
 const STATUS_COLOR: Record<string, { bg: string; text: string; label: string }> = {
-  PLANIFIEE:    { bg: '#e0f2fe', text: '#0284c7', label: 'Planifiée' },
-  EN_COURS:     { bg: '#fef3c7', text: '#d97706', label: 'En cours' },
-  TERMINEE:     { bg: '#dcfce7', text: '#16a34a', label: 'Terminée' },
-  SYNCHRONISEE: { bg: '#f0fdf4', text: '#15803d', label: 'Synchronisée' },
+  PLANIFIEE:    { bg: 'transparent', text: '#0284c7', label: 'Planifiée' },
+  EN_COURS:     { bg: 'transparent', text: '#d97706', label: 'En cours' },
+  TERMINEE:     { bg: 'transparent', text: '#16a34a', label: 'Terminée' },
+  SYNCHRONISEE: { bg: 'transparent', text: '#15803d', label: 'Synchronisée' },
 };
 
 export default function MissionsScreen() {
@@ -39,7 +39,7 @@ export default function MissionsScreen() {
     try {
       const result = await syncService.downloadMorningData();
       charger();
-      Alert.alert('✅ Synchronisé', `${result.missions} mission(s), ${result.equipements} équipement(s)`);
+      Alert.alert('Synchronisé', `${result.missions} mission(s), ${result.equipements} équipement(s)`);
     } catch (e: any) {
       Alert.alert('Erreur', e?.message || 'Synchronisation échouée');
     } finally {
@@ -56,7 +56,7 @@ export default function MissionsScreen() {
     try {
       const result = await syncService.uploadEveningData();
       charger();
-      Alert.alert('✅ Envoyé', `${result.uploaded} intervention(s) et statuts mis à jour`);
+      Alert.alert('Envoyé', `${result.uploaded} intervention(s) et statuts mis à jour`);
     } catch (e: any) {
       Alert.alert('Erreur', e?.message || 'Envoi échoué');
     } finally {
@@ -110,7 +110,8 @@ export default function MissionsScreen() {
               <Link href={`/mission/${m.id}`} asChild key={m.id}>
                 <TouchableOpacity style={styles.card}>
                   <View style={styles.cardTop}>
-                    <View style={[styles.badge, { backgroundColor: status.bg }]}>
+                    <View style={[styles.badge]}>
+                      <View style={[styles.statusDot, { backgroundColor: status.text }]} />
                       <Text style={[styles.badgeText, { color: status.text }]}>{status.label}</Text>
                     </View>
                     {feuilles && (
@@ -125,16 +126,16 @@ export default function MissionsScreen() {
                   </Text>
 
                   <View style={styles.cardMeta}>
-                    <Building2 color="#64748b" size={14} />
+                    <Building2 color="#334155" size={14} />
                     <Text style={styles.metaText}>{m.site_nom || '—'}</Text>
                     {m.site_ville ? <Text style={styles.metaCity}> • {m.site_ville}</Text> : null}
                   </View>
 
                   <View style={styles.cardFooter}>
-                    <Calendar color="#94a3b8" size={14} />
+                    <Calendar color="#475569" size={14} />
                     <Text style={styles.dateChip}>{m.date_planifiee}</Text>
                     <View style={{ flex: 1 }} />
-                    <ChevronRight color="#94a3b8" size={20} />
+                    <ChevronRight color="#475569" size={20} />
                   </View>
                 </TouchableOpacity>
               </Link>
@@ -156,46 +157,47 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e2e8f0',
   },
-  dateText: { fontSize: 13, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.8 },
+  dateText: { fontSize: 13, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.8 },
   title: { fontSize: 26, fontWeight: '700', color: '#0f172a', marginTop: 2, marginBottom: 16 },
   btnRow: { flexDirection: 'row', gap: 10 },
   btnSync: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, backgroundColor: '#22b5d8', paddingVertical: 12, borderRadius: 10,
+    gap: 8, backgroundColor: '#22b5d8', paddingVertical: 14, borderRadius: 8, minHeight: 44,
   },
   btnUpload: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, backgroundColor: '#94a3b8', paddingVertical: 12, borderRadius: 10,
+    gap: 8, backgroundColor: '#475569', paddingVertical: 14, borderRadius: 8, minHeight: 44,
   },
   btnUploadActive: { backgroundColor: '#16a34a' },
-  btnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  btnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
 
   list: { padding: 16, paddingBottom: 40 },
   empty: {
-    alignItems: 'center', backgroundColor: '#fff', padding: 40,
-    borderRadius: 16, borderWidth: 1, borderColor: '#e2e8f0',
+    alignItems: 'center', backgroundColor: '#fff', padding: 24,
+    borderRadius: 8, borderWidth: 1, borderColor: '#e2e8f0',
     borderStyle: 'dashed', marginTop: 20,
   },
   emptyTitle: { fontSize: 18, fontWeight: '700', color: '#334155', marginTop: 16, marginBottom: 8 },
-  emptySub: { fontSize: 14, color: '#64748b', textAlign: 'center', lineHeight: 20 },
+  emptySub: { fontSize: 14, color: '#475569', textAlign: 'center', lineHeight: 20 },
 
   card: {
-    backgroundColor: '#fff', borderRadius: 14, padding: 16,
+    backgroundColor: '#fff', borderRadius: 12, padding: 16,
     marginBottom: 12, borderWidth: 1, borderColor: '#e2e8f0',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06, shadowRadius: 6, elevation: 3,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,
   },
   cardTop: { flexDirection: 'row', gap: 8, marginBottom: 10 },
-  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
-  badgeText: { fontSize: 12, fontWeight: '700' },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 2 },
+  statusDot: { width: 10, height: 10, borderRadius: 5 },
+  badgeText: { fontSize: 12, fontWeight: '600' },
   feuillesBadge: {
-    backgroundColor: '#f0f9ff', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: '#e2e8f0', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4,
   },
-  feuillesText: { fontSize: 12, color: '#0284c7', fontWeight: '600' },
+  feuillesText: { fontSize: 12, color: '#0284c7', fontWeight: '500' },
   cardTitle: { fontSize: 16, fontWeight: '600', color: '#0f172a', marginBottom: 8 },
   cardMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 10 },
-  metaText: { fontSize: 14, color: '#64748b', fontWeight: '500' },
-  metaCity: { fontSize: 14, color: '#94a3b8' },
+  metaText: { fontSize: 14, color: '#334155', fontWeight: '500' },
+  metaCity: { fontSize: 14, color: '#475569' },
   cardFooter: { flexDirection: 'row', alignItems: 'center', gap: 6, borderTopWidth: 1, borderTopColor: '#f1f5f9', paddingTop: 10 },
-  dateChip: { fontSize: 13, color: '#94a3b8' },
+  dateChip: { fontSize: 13, color: '#475569' },
 });

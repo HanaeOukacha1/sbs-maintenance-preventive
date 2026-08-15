@@ -1,7 +1,81 @@
 import React, { useState, useEffect } from 'react';
-import { Briefcase, Search, Plus, Calendar, MapPin, User as UserIcon } from 'lucide-react';
+import { Briefcase, Search, Plus, Calendar as CalendarIcon, MapPin, User as UserIcon, List, CalendarDays } from 'lucide-react';
+import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
+import { format, parse, startOfWeek, getDay } from 'date-fns';
+import { fr } from 'date-fns/locale/fr';
 import api from '../services/api';
 import Modal from '../components/Modal';
+
+const locales = {
+  'fr': fr,
+};
+
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales,
+});
+
+// ── Bouton de téléchargement avec spinner ──────────────────────────────────────
+const DownloadBtn = ({ missionId }) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleDownload = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get(`/missions/${missionId}/export`, {
+        responseType: 'blob',
+        timeout: 180000, // 3 minutes max
+      });
+      const blob = res.data;
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const disposition = res.headers['content-disposition'];
+      let filename = `Rapport_Mission_${missionId}`;
+      if (disposition && disposition.indexOf('filename=') !== -1) {
+        filename = disposition.split('filename=')[1].replace(/['"]/g, '').trim();
+      }
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      const msg = e.response?.status === 400
+        ? 'Aucune intervention enregistrée pour cette mission.'
+        : 'Erreur lors de la génération du rapport. Réessayez.';
+      alert(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      className="btn btn-secondary btn-sm"
+      onClick={handleDownload}
+      disabled={loading}
+      title="Télécharger le rapport"
+      style={{ minWidth: 110, display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}
+    >
+      {loading ? (
+        <>
+          <span style={{
+            width: 12, height: 12, borderRadius: '50%',
+            border: '2px solid var(--text-muted)', borderTopColor: 'var(--primary)',
+            display: 'inline-block', animation: 'spin 0.7s linear infinite'
+          }} />
+          Génération...
+        </>
+      ) : (
+        <>⬇ Rapport</>
+      )}
+    </button>
+  );
+};
 
 const Missions = () => {
   const [missions, setMissions] = useState([]);
@@ -10,6 +84,7 @@ const Missions = () => {
   const [statusFilter, setStatusFilter] = useState('');
 
   const [techniciens, setTechniciens] = useState([]);
+  const [marches, setMarches] = useState([]);
   const [sites, setSites] = useState([]);
   const [sitesMap, setSitesMap] = useState({});
   const [usersMap, setUsersMap] = useState({});
@@ -18,18 +93,23 @@ const Missions = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     titre: '', description: '', date_planifiee: '',
-    technicien_id: '', site_id: '',
+    technicien_id: '', marche_id: '', site_id: '',
   });
   const [formErrors, setFormErrors] = useState({});
   const [globalError, setGlobalError] = useState('');
+  
+  const [viewMode, setViewMode] = useState('list');
+  const [calendarDate, setCalendarDate] = useState(new Date());
+  const [calendarView, setCalendarView] = useState('month');
 
   const fetchDonnees = async () => {
     try {
       setIsLoading(true);
-      const [resMissions, resUsers, resSites] = await Promise.all([
+      const [resMissions, resUsers, resSites, resMarches] = await Promise.all([
         api.get('/missions/'),
         api.get('/users/'),
         api.get('/sites/'),
+        api.get('/marches/'),
       ]);
 
       const uMap = {};
@@ -43,6 +123,7 @@ const Missions = () => {
       setMissions(resMissions.data);
       setTechniciens(resUsers.data.filter(u => u.role === 'TECHNICIEN'));
       setSites(resSites.data);
+      setMarches(resMarches.data);
     } catch (e) {
       console.error(e);
     } finally {
@@ -57,6 +138,7 @@ const Missions = () => {
     if (!formData.titre.trim()) errors.titre = 'Le titre est requis.';
     if (!formData.date_planifiee) errors.date_planifiee = 'La date est requise.';
     if (!formData.technicien_id) errors.technicien_id = 'Veuillez assigner un technicien.';
+    if (!formData.marche_id) errors.marche_id = 'Veuillez sélectionner un marché.';
     if (!formData.site_id) errors.site_id = 'Veuillez sélectionner un site.';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -64,7 +146,11 @@ const Missions = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'marche_id') {
+      setFormData(prev => ({ ...prev, marche_id: value, site_id: '' }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
     if (formErrors[name]) setFormErrors(prev => ({ ...prev, [name]: '' }));
   };
 
@@ -79,9 +165,10 @@ const Missions = () => {
         technicien_id: parseInt(formData.technicien_id),
         site_id: parseInt(formData.site_id),
       };
+      delete payload.marche_id;
       const response = await api.post('/missions/', payload);
       setMissions([...missions, response.data]);
-      setFormData({ titre: '', description: '', date_planifiee: '', technicien_id: '', site_id: '' });
+      setFormData({ titre: '', description: '', date_planifiee: '', technicien_id: '', marche_id: '', site_id: '' });
       setIsModalOpen(false);
     } catch (e) {
       setGlobalError(e.response?.data?.detail || 'Erreur lors de la création.');
@@ -96,6 +183,19 @@ const Missions = () => {
     return matchText && matchStatus;
   });
 
+  const missionsByDate = filtered.reduce((acc, mission) => {
+    const date = mission.date_planifiee || 'Date non définie';
+    if (!acc[date]) acc[date] = [];
+    acc[date].push(mission);
+    return acc;
+  }, {});
+
+  const sortedDates = Object.keys(missionsByDate).sort((a, b) => {
+    if (a === 'Date non définie') return 1;
+    if (b === 'Date non définie') return -1;
+    return new Date(a) - new Date(b);
+  });
+
   const getStatusBadge = (status) => {
     const map = {
       PLANIFIEE:    { bg: '#e0f2fe', color: '#0284c7', label: 'Planifiée' },
@@ -103,7 +203,7 @@ const Missions = () => {
       TERMINEE:     { bg: '#dcfce7', color: '#16a34a', label: 'Terminée' },
       SYNCHRONISEE: { bg: '#f0fdf4', color: '#15803d', label: 'Synchronisée' },
     };
-    const s = map[status] || { bg: '#f1f5f9', color: '#64748b', label: status };
+    const s = map[status] || { bg: 'var(--bg-app)', color: 'var(--text-muted)', label: status };
     return <span className="badge" style={{ backgroundColor: s.bg, color: s.color }}>{s.label}</span>;
   };
 
@@ -114,9 +214,39 @@ const Missions = () => {
           <h1 className="text-h1">Gestion des Missions</h1>
           <p className="text-muted">Planifiez et suivez les interventions sur site.</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
-          <Plus size={16} /> Nouvelle Mission
-        </button>
+        <div className="d-flex items-center gap-3">
+          <div className="d-flex" style={{ backgroundColor: 'var(--bg-hover)', borderRadius: 8, padding: 4 }}>
+            <button
+              onClick={() => setViewMode('list')}
+              style={{
+                border: 'none', padding: '0.4rem 0.8rem', borderRadius: 6, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.875rem', fontWeight: 500,
+                backgroundColor: viewMode === 'list' ? 'var(--bg-panel)' : 'transparent',
+                color: viewMode === 'list' ? 'var(--primary)' : 'var(--text-muted)',
+                boxShadow: viewMode === 'list' ? 'var(--shadow-sm)' : 'none',
+                transition: 'all var(--transition-fast)'
+              }}
+            >
+              <List size={16} /> Liste
+            </button>
+            <button
+              onClick={() => setViewMode('calendar')}
+              style={{
+                border: 'none', padding: '0.4rem 0.8rem', borderRadius: 6, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.875rem', fontWeight: 500,
+                backgroundColor: viewMode === 'calendar' ? 'var(--bg-panel)' : 'transparent',
+                color: viewMode === 'calendar' ? 'var(--primary)' : 'var(--text-muted)',
+                boxShadow: viewMode === 'calendar' ? 'var(--shadow-sm)' : 'none',
+                transition: 'all var(--transition-fast)'
+              }}
+            >
+              <CalendarDays size={16} /> Planning
+            </button>
+          </div>
+          <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
+            <Plus size={16} /> Nouvelle Mission
+          </button>
+        </div>
       </div>
 
       <div className="card p-4 mb-4 d-flex justify-between items-center" style={{ flexWrap: 'wrap', gap: '1rem' }}>
@@ -138,101 +268,131 @@ const Missions = () => {
         </select>
       </div>
 
-      <div className="card">
-        <div className="table-container">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Mission</th>
-                <th>Technicien</th>
-                <th>Site</th>
-                <th>Date</th>
-                <th>Statut</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+      {viewMode === 'list' ? (
+        <div className="card">
+          <div className="table-container">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Mission</th>
+                  <th>Technicien</th>
+                  <th>Site</th>
+                  <th>Date</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
               {isLoading ? (
                 <tr><td colSpan="6" className="text-center py-4 text-muted">Chargement...</td></tr>
               ) : filtered.length === 0 ? (
                 <tr><td colSpan="6" className="text-center py-4 text-muted">Aucune mission.</td></tr>
-              ) : filtered.map(m => {
-                const tech = usersMap[m.technicien_id];
-                const site = sitesMap[m.site_id];
-                return (
-                  <tr key={m.id}>
-                    <td>
-                      <div style={{ fontWeight: 600, color: 'var(--text-dark)' }}>{m.titre || '—'}</div>
-                      <div className="text-muted" style={{ fontSize: '0.75rem' }}>{m.description || ''}</div>
-                    </td>
-                    <td>
-                      <div className="d-flex items-center gap-2 text-muted">
-                        <UserIcon size={14} />
-                        {tech ? `${tech.prenom || ''} ${tech.nom || ''}`.trim() : `Tech #${m.technicien_id}`}
-                      </div>
-                    </td>
-                    <td>
-                      <div className="d-flex items-center gap-1 text-muted">
-                        <MapPin size={14} />
-                        <div>
-                          <div>{site?.nom || `Site #${m.site_id}`}</div>
-                          {site?.ville && <div style={{ fontSize: '0.75rem' }}>{site.ville}</div>}
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="d-flex items-center gap-2 text-muted">
-                        <Calendar size={14} />
-                        {m.date_planifiee ? new Date(m.date_planifiee).toLocaleDateString('fr-FR') : '—'}
-                      </div>
-                    </td>
-                    <td>{getStatusBadge(m.statut)}</td>
-                    <td>
-                      {m.statut === 'TERMINEE' && (
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          title="Télécharger le rapport"
-                          onClick={async () => {
-                            try {
-                              const token = localStorage.getItem('token');
-                              const res = await fetch(`http://localhost:8000/api/v1/missions/${m.id}/export`, {
-                                headers: { 'Authorization': `Bearer ${token}` }
-                              });
-                              if (!res.ok) throw new Error("Erreur lors du téléchargement");
-                              
-                              const blob = await res.blob();
-                              const url = window.URL.createObjectURL(blob);
-                              const a = document.createElement('a');
-                              a.href = url;
-                              
-                              // Récupérer le nom du fichier depuis le header Content-Disposition si possible
-                              const disposition = res.headers.get('Content-Disposition');
-                              let filename = "Rapport.xlsx"; // défaut
-                              if (disposition && disposition.indexOf('filename=') !== -1) {
-                                filename = disposition.split('filename=')[1];
-                              }
-                              
-                              a.download = filename;
-                              document.body.appendChild(a);
-                              a.click();
-                              a.remove();
-                              window.URL.revokeObjectURL(url);
-                            } catch (e) {
-                              alert(e.message);
-                            }
-                          }}
-                        >
-                          Télécharger
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+              ) : (
+                sortedDates.map(dateStr => (
+                  <React.Fragment key={dateStr}>
+                    <tr className="date-group-header">
+                      <td colSpan="6">
+                        {dateStr === 'Date non définie' ? dateStr : new Date(dateStr).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                      </td>
+                    </tr>
+                    {missionsByDate[dateStr].map(m => {
+                      const tech = usersMap[m.technicien_id];
+                      const site = sitesMap[m.site_id];
+                      return (
+                        <tr key={m.id}>
+                          <td>
+                            <div style={{ fontWeight: 600, color: 'var(--text-dark)' }}>{m.titre || '—'}</div>
+                            <div className="text-muted" style={{ fontSize: '0.75rem' }}>{m.description || ''}</div>
+                          </td>
+                          <td>
+                            <div className="d-flex items-center gap-2 text-muted">
+                              <UserIcon size={14} />
+                              {tech ? `${tech.prenom || ''} ${tech.nom || ''}`.trim() : `Tech #${m.technicien_id}`}
+                            </div>
+                          </td>
+                          <td>
+                            <div className="d-flex items-center gap-1 text-muted">
+                              <MapPin size={14} />
+                              <div>
+                                <div>{site?.nom || `Site #${m.site_id}`}</div>
+                                {site?.ville && <div style={{ fontSize: '0.75rem' }}>{site.ville}</div>}
+                              </div>
+                            </div>
+                          </td>
+                          <td>
+                            <div className="d-flex items-center gap-2 text-muted">
+                              <CalendarIcon size={14} />
+                              {m.date_planifiee ? new Date(m.date_planifiee).toLocaleDateString('fr-FR') : '—'}
+                            </div>
+                          </td>
+                          <td>{getStatusBadge(m.statut)}</td>
+                          <td>
+                             {(m.statut === 'TERMINEE' || m.statut === 'SYNCHRONISEE') && (
+                               <DownloadBtn missionId={m.id} />
+                             )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </React.Fragment>
+                ))
+              )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="card p-4" style={{ height: 600 }}>
+          <Calendar
+            localizer={localizer}
+            date={calendarDate}
+            onNavigate={(newDate) => setCalendarDate(newDate)}
+            view={calendarView}
+            onView={(newView) => setCalendarView(newView)}
+            events={filtered.map(m => {
+              const d = m.date_planifiee ? new Date(m.date_planifiee) : new Date();
+              return {
+                id: m.id,
+                title: m.titre || 'Mission',
+                start: d,
+                end: d,
+                resource: m
+              };
+            })}
+            startAccessor="start"
+            endAccessor="end"
+            messages={{
+              next: "Suivant",
+              previous: "Précédent",
+              today: "Aujourd'hui",
+              month: "Mois",
+              week: "Semaine",
+              day: "Jour",
+              agenda: "Agenda",
+              noEventsInRange: "Aucune mission dans cette période."
+            }}
+            eventPropGetter={(event) => {
+              const m = event.resource;
+              let bgColor = 'var(--text-muted)';
+              if (m.statut === 'PLANIFIEE') bgColor = 'var(--primary)';
+              if (m.statut === 'EN_COURS') bgColor = 'var(--warning)';
+              if (m.statut === 'TERMINEE') bgColor = 'var(--success)';
+              if (m.statut === 'SYNCHRONISEE') bgColor = '#15803d'; // dark green
+              
+              return {
+                style: {
+                  backgroundColor: bgColor,
+                  border: 'none',
+                  borderRadius: '4px',
+                  opacity: 0.9,
+                  color: '#fff',
+                  fontSize: '0.8rem',
+                }
+              };
+            }}
+          />
+        </div>
+      )}
 
       <Modal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setFormErrors({}); setGlobalError(''); }} title="Planifier une Nouvelle Mission">
         <form onSubmit={handleSubmit} className="flex-col gap-3" noValidate>
@@ -251,14 +411,26 @@ const Missions = () => {
 
           <div className="d-flex gap-3">
             <div className="form-group flex-1">
+              <label className="form-label">Marché <span style={{ color: 'var(--danger)' }}>*</span></label>
+              <select name="marche_id" className={`form-input ${formErrors.marche_id ? 'error-input' : ''}`}
+                value={formData.marche_id} onChange={handleInputChange}>
+                <option value="">-- Sélectionner --</option>
+                {marches.map(m => <option key={m.id} value={m.id}>{m.nom}</option>)}
+              </select>
+              {formErrors.marche_id && <div className="error-text">{formErrors.marche_id}</div>}
+            </div>
+            <div className="form-group flex-1">
               <label className="form-label">Site <span style={{ color: 'var(--danger)' }}>*</span></label>
               <select name="site_id" className={`form-input ${formErrors.site_id ? 'error-input' : ''}`}
-                value={formData.site_id} onChange={handleInputChange}>
+                value={formData.site_id} onChange={handleInputChange} disabled={!formData.marche_id}>
                 <option value="">-- Sélectionner --</option>
-                {sites.map(s => <option key={s.id} value={s.id}>{s.nom} ({s.ville})</option>)}
+                {sites.filter(s => s.marche_id === parseInt(formData.marche_id)).map(s => <option key={s.id} value={s.id}>{s.nom} ({s.ville})</option>)}
               </select>
               {formErrors.site_id && <div className="error-text">{formErrors.site_id}</div>}
             </div>
+          </div>
+          
+          <div className="d-flex gap-3">
             <div className="form-group flex-1">
               <label className="form-label">Date prévue <span style={{ color: 'var(--danger)' }}>*</span></label>
               <input type="date" name="date_planifiee" className={`form-input ${formErrors.date_planifiee ? 'error-input' : ''}`}

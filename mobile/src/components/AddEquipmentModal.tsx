@@ -42,7 +42,7 @@ const getFormFields = (checklistType: string, feuille?: string): Array<{
     { key: 'systeme_exploitation', label: "Système d'Exploitation", half: true },
   ];
 
-  if (checklistType === 'AMEE_MARRAKECH' || checklistType === 'AMEE_RABAT') {
+  if (checklistType === 'AMEE_MARRAKECH') {
     const feuilleU = (feuille || '').toUpperCase();
     if (feuilleU.includes('UC') || feuilleU.includes('PC')) return [
       { key: 'utilisateur_nom', label: 'Utilisateur', required: true },
@@ -53,8 +53,28 @@ const getFormFields = (checklistType: string, feuille?: string): Array<{
       { key: 'numero_inventaire', label: 'N° Inventaire', half: true },
       { key: 'cpu', label: 'CPU', half: true },
       { key: 'ram', label: 'RAM', half: true },
-      { key: 'disque_dur', label: 'Stockage', half: true },
-      { key: 'systeme_exploitation', label: 'OS', half: true },
+      { key: 'systeme_exploitation', label: 'OS' },
+    ];
+    if (feuilleU.includes('IMP')) return [
+      { key: 'designation', label: 'Type', placeholder: 'Imprimante multifonction...', required: true },
+      { key: 'marque', label: 'Marque', half: true },
+      { key: 'modele', label: 'Modèle', half: true },
+      { key: 'numero_serie', label: 'N° Série' },
+    ];
+    return base;
+  }
+
+  if (checklistType === 'AMEE_RABAT') {
+    const feuilleU = (feuille || '').toUpperCase();
+    if (feuilleU.includes('UC') || feuilleU.includes('PC')) return [
+      { key: 'utilisateur_nom', label: 'Utilisateur', required: true },
+      { key: 'designation', label: 'Type de poste', placeholder: 'UC, PC Portable...', required: true },
+      { key: 'marque', label: 'Marque', half: true },
+      { key: 'modele', label: 'Modèle', half: true },
+      { key: 'numero_serie', label: 'N° Série' },
+      { key: 'cpu', label: 'CPU', half: true },
+      { key: 'ram', label: 'RAM', half: true },
+      { key: 'systeme_exploitation', label: 'OS' },
     ];
     if (feuilleU.includes('IMP')) return [
       { key: 'designation', label: 'Type', placeholder: 'Imprimante multifonction...', required: true },
@@ -105,7 +125,6 @@ const getFormFields = (checklistType: string, feuille?: string): Array<{
     { key: 'marque', label: 'Marque', half: true },
     { key: 'modele', label: 'Modèle', half: true },
     { key: 'numero_serie', label: 'N° Série', half: true },
-    { key: 'numero_inventaire', label: 'N° Inventaire', half: true },
     { key: 'direction', label: 'Direction' },
     { key: 'bureau', label: 'Bureau', half: true },
     { key: 'utilisateur_nom', label: 'Utilisateur', half: true },

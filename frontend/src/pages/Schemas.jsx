@@ -271,12 +271,12 @@ const Schemas = () => {
 
             <div className="fields-container" style={{ maxHeight: '400px', overflowY: 'auto', paddingRight: '8px' }}>
               {schemaFields.length === 0 ? (
-                <div className="text-center text-muted py-4" style={{ backgroundColor: '#f8fafc', borderRadius: '8px' }}>
+                <div className="text-center text-muted py-4" style={{ backgroundColor: 'var(--bg-hover)', borderRadius: '8px' }}>
                   Aucun champ défini. Cliquez sur "Ajouter un champ".
                 </div>
               ) : (
                 schemaFields.map((field, index) => (
-                  <div key={index} className="field-editor-card mb-3 p-3" style={{ backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                  <div key={index} className="field-editor-card mb-3 p-3" style={{ backgroundColor: 'var(--bg-hover)', borderRadius: '8px', border: '1px solid var(--border-light)' }}>
                     <div className="d-flex justify-between items-start mb-2">
                       <div className="d-flex items-center gap-2">
                         <GripVertical size={16} className="text-muted" style={{ cursor: 'move' }} />
@@ -289,7 +289,7 @@ const Schemas = () => {
                     
                     <div className="d-flex gap-3 mb-2">
                       <div className="form-group flex-1" style={{ marginBottom: 0 }}>
-                        <label style={{ fontSize: '0.75rem', color: '#64748b' }}>Clé technique (unique)</label>
+                        <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Clé technique (unique)</label>
                         <input 
                           type="text" className="form-input" style={{ padding: '6px 12px' }}
                           value={field.key || ''} 
@@ -297,7 +297,7 @@ const Schemas = () => {
                         />
                       </div>
                       <div className="form-group flex-1" style={{ marginBottom: 0 }}>
-                        <label style={{ fontSize: '0.75rem', color: '#64748b' }}>Label affiché à l'utilisateur</label>
+                        <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Label affiché à l'utilisateur</label>
                         <input 
                           type="text" className="form-input" style={{ padding: '6px 12px' }}
                           value={field.label || ''} 
@@ -307,7 +307,7 @@ const Schemas = () => {
                     </div>
                     
                     <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label style={{ fontSize: '0.75rem', color: '#64748b' }}>Options (séparées par une virgule)</label>
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Options (séparées par une virgule)</label>
                       <input 
                         type="text" className="form-input" style={{ padding: '6px 12px' }}
                         value={Array.isArray(field.options) ? field.options.join(', ') : ''} 
@@ -350,7 +350,7 @@ const Schemas = () => {
         .btn-icon {
           padding: 6px;
           border-radius: 6px;
-          background-color: #f1f5f9;
+          background-color: var(--bg-hover);
           transition: background-color var(--transition-fast);
           border: none;
           cursor: pointer;
@@ -358,11 +358,17 @@ const Schemas = () => {
         .btn-icon:hover {
           background-color: var(--border-strong);
         }
-        .btn-icon.delete:hover {
-          background-color: #fee2e2;
+        .btn-remove-field {
+          background-color: var(--danger-bg);
+          color: var(--danger);
+          padding: 0.5rem;
+        }
+        .btn-remove-field:hover {
+          background-color: var(--danger-bg);
+          opacity: 0.8;
         }
         .text-primary { color: var(--primary); }
-        .text-danger { color: #ef4444; }
+        .text-danger { color: var(--danger); }
       `}</style>
     </div>
   );

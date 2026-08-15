@@ -44,7 +44,8 @@
   --transition-normal: 250ms ease;
   
   /* Typographie */
-  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
 }
 
 /* ========================================================
@@ -116,21 +117,24 @@ input, select, textarea {
 .card {
   background: var(--bg-panel);
   border: 1px solid var(--border-light);
-  border-radius: 12px;
-  box-shadow: var(--shadow-sm);
+  border-radius: 6px;
+  box-shadow: none;
   transition: box-shadow var(--transition-fast);
 }
 
 .card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: none;
+  border-color: var(--primary);
 }
 
 /* Typographie */
 .text-h1 { font-size: 1.875rem; font-weight: 700; color: var(--text-dark); letter-spacing: -0.025em; margin-bottom: 0.5rem; }
 .text-h2 { font-size: 1.25rem; font-weight: 600; color: var(--text-dark); margin-bottom: 0.5rem; }
 .text-h3 { font-size: 1rem; font-weight: 600; color: var(--text-dark); }
-.text-muted { color: var(--text-muted); font-size: 0.875rem; }
+.text-muted { color: var(--text-muted); font-size: 0.875rem; font-weight: 400; }
 .text-center { text-align: center; }
+.text-right { text-align: right; }
+.font-mono { font-family: var(--font-mono); font-size: 0.85rem; }
 
 /* Layout Flexbox */
 .d-flex { display: flex; }
@@ -225,17 +229,25 @@ input, select, textarea {
 }
 
 /* Badges de statut */
+/* Badges de statut - look plus technique */
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.625rem;
-  border-radius: 999px;
+  padding: 0.25rem 0;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 500;
+  color: var(--text-main);
+  gap: 0.375rem;
+  background: transparent !important;
 }
-.badge.cyan { background-color: var(--primary-light); color: var(--primary-hover); }
-.badge.gold { background-color: rgba(242, 198, 47, 0.2); color: var(--warning); }
-.badge.gray { background-color: var(--bg-hover); color: var(--text-muted); }
+.badge::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background-color: currentColor;
+}
 
 /* Tableaux */
 .table-container {
@@ -249,21 +261,35 @@ input, select, textarea {
 }
 .table th {
   padding: 0.75rem 1rem;
-  font-size: 0.75rem;
-  font-weight: 600;
+  background-color: var(--bg-hover);
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-weight: 500;
+  font-size: 0.875rem;
   border-bottom: 1px solid var(--border-light);
-  background: var(--bg-hover);
 }
 .table td {
   padding: 1rem;
-  font-size: 0.875rem;
-  color: var(--text-dark);
   border-bottom: 1px solid var(--border-light);
   vertical-align: middle;
 }
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+/* En-tête de jour (Sticky) */
+.date-group-header td {
+  background-color: var(--bg-app);
+  font-weight: 600;
+  color: var(--text-dark);
+  font-size: 0.875rem;
+  text-transform: capitalize;
+  padding: 0.5rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 2px solid var(--border-light);
+}
+
 .table tr {
   transition: background-color var(--transition-fast);
 }
@@ -325,6 +351,91 @@ input, select, textarea {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .slide-in-bottom {
   animation: slideInBottom 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ========================================================
+   REACT-BIG-CALENDAR (Thème adaptatif Light / Dark)
+   ======================================================== */
+.rbc-calendar {
+  font-family: var(--font-family);
+  color: var(--text-main);
+}
+
+.rbc-header {
+  border-bottom: 1px solid var(--border-light) !important;
+  border-left: 1px solid var(--border-light) !important;
+  padding: 0.5rem;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+.rbc-header + .rbc-header {
+  border-left: 1px solid var(--border-light) !important;
+}
+
+.rbc-month-view, .rbc-time-view, .rbc-agenda-view {
+  border: 1px solid var(--border-light) !important;
+}
+
+.rbc-day-bg, .rbc-month-row, .rbc-time-content, .rbc-time-header-content {
+  border-color: var(--border-light) !important;
+}
+
+.rbc-day-bg + .rbc-day-bg {
+  border-left: 1px solid var(--border-light) !important;
+}
+
+/* Cellules du calendrier */
+.rbc-off-range-bg {
+  background-color: var(--bg-hover) !important;
+}
+
+.rbc-today {
+  background-color: var(--primary-light) !important;
+}
+
+.rbc-button-link {
+  color: var(--text-main);
+}
+
+/* Toolbar (Boutons Mois, Semaine, Aujourd'hui) */
+.rbc-toolbar button {
+  color: var(--text-main);
+  border: 1px solid var(--border-strong) !important;
+  background-color: var(--bg-panel);
+  transition: all var(--transition-fast);
+}
+
+.rbc-toolbar button:hover, .rbc-toolbar button:active, .rbc-toolbar button.rbc-active {
+  background-color: var(--bg-hover) !important;
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  box-shadow: none !important;
+}
+
+/* Agenda View */
+.rbc-agenda-view table.rbc-agenda-table {
+  border: 1px solid var(--border-light);
+}
+.rbc-agenda-view table.rbc-agenda-table tbody > tr > td {
+  border-color: var(--border-light);
+  color: var(--text-main);
+}
+.rbc-agenda-view table.rbc-agenda-table thead > tr > th {
+  border-color: var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-dark);
+}
+
+/* Time View */
+.rbc-timeslot-group {
+  border-bottom: 1px solid var(--border-light) !important;
+}
+.rbc-time-content > * + * > * {
+  border-left: 1px solid var(--border-light) !important;
 }

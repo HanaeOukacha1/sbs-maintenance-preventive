@@ -47,7 +47,7 @@ const Dashboard = () => {
       TERMINEE:  { bg: '#dcfce7', color: '#16a34a', label: 'Terminée' },
       SYNCHRONISEE: { bg: '#f0fdf4', color: '#15803d', label: 'Synchronisée' },
     };
-    const s = map[status] || { bg: '#f1f5f9', color: '#64748b', label: status };
+    const s = map[status] || { bg: 'var(--bg-app)', color: 'var(--text-muted)', label: status };
     return <span className="badge" style={{ backgroundColor: s.bg, color: s.color }}>{s.label}</span>;
   };
 

@@ -203,7 +203,7 @@ const Users = () => {
                   <tr key={user.id}>
                     <td>
                       <div className="d-flex items-center gap-3">
-                        <div className="mini-avatar" style={{ backgroundColor: '#e2e8f0', color: '#475569' }}>
+                        <div className="mini-avatar" style={{ backgroundColor: 'var(--border-light)', color: '#475569' }}>
                           {user.prenom.charAt(0)}{user.nom.charAt(0)}
                         </div>
                         <div style={{ fontWeight: 500 }}>{user.prenom} {user.nom}</div>
@@ -273,7 +273,7 @@ const Users = () => {
           transition: background-color var(--transition-fast);
         }
         .btn-icon:hover {
-          background-color: #f1f5f9;
+          background-color: var(--bg-app);
         }
         .btn-icon.delete:hover {
           background-color: var(--danger-bg);

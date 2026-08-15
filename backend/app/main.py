@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import os
 from app.core.config import settings
 from app.db.database import Base, engine
 import app.models  # noqa: F401 — importe tous les modèles pour que SQLAlchemy les connaisse
@@ -44,6 +46,11 @@ app.add_middleware(
     allow_headers=["*"],           # Authorization, Content-Type...
     expose_headers=["Content-Disposition"], # Nécessaire pour récupérer le nom du fichier
 )
+
+# Mount static files for logos
+static_path = os.path.join(os.path.dirname(__file__), "static")
+os.makedirs(static_path, exist_ok=True)
+app.mount("/static", StaticFiles(directory=static_path), name="static")
 
 # ============================================================
 # CRÉATION DES TABLES AU DÉMARRAGE

@@ -42,6 +42,8 @@ export const initDB = () => {
         cpu TEXT,
         ram TEXT,
         disque_dur TEXT,
+        disque_c TEXT,
+        disque_d TEXT,
         systeme_exploitation TEXT,
         stockage_utilise TEXT,
         antivirus TEXT,
@@ -121,6 +123,8 @@ export const initDB = () => {
       'ALTER TABLE equipements ADD COLUMN cpu TEXT',
       'ALTER TABLE equipements ADD COLUMN ram TEXT',
       'ALTER TABLE equipements ADD COLUMN disque_dur TEXT',
+      'ALTER TABLE equipements ADD COLUMN disque_c TEXT',
+      'ALTER TABLE equipements ADD COLUMN disque_d TEXT',
       'ALTER TABLE equipements ADD COLUMN systeme_exploitation TEXT',
       'ALTER TABLE equipements ADD COLUMN stockage_utilise TEXT',
       'ALTER TABLE equipements ADD COLUMN antivirus TEXT',
@@ -143,6 +147,8 @@ export const initDB = () => {
       'ALTER TABLE interventions ADD COLUMN heure_fin TEXT',
       'ALTER TABLE json_schemas ADD COLUMN marche_id INTEGER',
       'ALTER TABLE json_schemas ADD COLUMN site_id INTEGER',
+      'ALTER TABLE json_schemas ADD COLUMN version INTEGER',
+      'ALTER TABLE json_schemas ADD COLUMN is_active INTEGER',
     ];
 
     for (const sql of migrations) {

@@ -95,3 +95,35 @@ def delete_marche(
 
     db.delete(marche)
     db.commit()
+
+import os
+import shutil
+from fastapi import UploadFile, File
+
+@router.post("/{marche_id}/logo", response_model=MarcheResponse)
+def upload_marche_logo(
+    marche_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user=Depends(admin_or_superviseur)
+):
+    marche = db.query(Marche).filter(Marche.id == marche_id).first()
+    if not marche:
+        raise HTTPException(status_code=404, detail="Marché introuvable")
+
+    # Define directory for logos
+    logos_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "static", "logos")
+    os.makedirs(logos_dir, exist_ok=True)
+
+    # Sanitize filename or just use marche id
+    ext = os.path.splitext(file.filename)[1]
+    filename = f"marche_{marche_id}{ext}"
+    file_path = os.path.join(logos_dir, filename)
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    marche.logo_url = f"/static/logos/{filename}"
+    db.commit()
+    db.refresh(marche)
+    return marche

@@ -1,19 +1,13 @@
 import { Tabs } from 'expo-router';
 import { ClipboardList, Settings, User } from 'lucide-react-native';
+import AppHeader from '../../components/AppHeader';
 
 export default function TabLayout() {
   return (
     <Tabs screenOptions={{ 
       tabBarActiveTintColor: '#22b5d8',
       tabBarInactiveTintColor: '#94a3b8',
-      headerShown: true,
-      headerStyle: {
-        backgroundColor: '#f8fafc',
-      },
-      headerTitleStyle: {
-        color: '#0f172a',
-        fontWeight: 'bold',
-      },
+      header: () => <AppHeader />,
       tabBarStyle: {
         backgroundColor: '#ffffff',
         borderTopColor: '#e2e8f0',

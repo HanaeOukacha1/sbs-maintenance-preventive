@@ -23,6 +23,15 @@ class Marche(Base):
     # Nom du client
     client = Column(String(200), nullable=False)
 
+    # Logo URL
+    logo_url = Column(String(255), nullable=True)
+
+    # Numéro du marché
+    numero = Column(String(100), nullable=True)
+
+    # Informations d'en-tête additionnelles
+    informations_entete = Column(Text, nullable=True)
+
     # Marché actif ou archivé
     is_active = Column(Boolean, default=True)
 

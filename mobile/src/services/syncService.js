@@ -79,10 +79,10 @@ const syncService = {
         `INSERT OR REPLACE INTO equipements
          (id, site_id, sous_site, nom, designation, famille, marque, modele, numero_serie,
           numero_inventaire, type_equipement, direction, bureau, emplacement, affectation,
-          entite, utilisateur_nom, cpu, ram, disque_dur, systeme_exploitation,
+          entite, utilisateur_nom, cpu, ram, disque_dur, disque_c, disque_d, systeme_exploitation,
           stockage_utilise, antivirus, ip, est_serveur_redondant, serveur_principal_id,
           puissance_kva, nb_batteries, capacite_batteries, zone, description, is_local)
-         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0)`
+         VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0)`
       );
       for (const eq of allEquipements) {
         insEq.executeSync([
@@ -92,6 +92,7 @@ const syncService = {
           eq.direction || null, eq.bureau || null, eq.emplacement || null,
           eq.affectation || null, eq.entite || null, eq.utilisateur_nom || null,
           eq.cpu || null, eq.ram || null, eq.disque_dur || null,
+          eq.disque_c || null, eq.disque_d || null,
           eq.systeme_exploitation || null, eq.stockage_utilise || null,
           eq.antivirus || null, eq.ip || null,
           eq.est_serveur_redondant ? 1 : 0, eq.serveur_principal_id || null,
@@ -202,6 +203,11 @@ const syncService = {
 
   // Sauvegarder une intervention localement (offline-first)
   saveIntervention: (data) => {
+    // Supprimer l'ancienne entrée pour ce même équipement/mission/feuille (upsert)
+    db.runSync(
+      'DELETE FROM interventions WHERE mission_id = ? AND equipement_id IS ? AND feuille IS ?',
+      [data.mission_id, data.equipement_id || null, data.feuille || null]
+    );
     const stmt = db.prepareSync(
       `INSERT INTO interventions
        (mission_id, equipement_id, feuille, reponses, observations,

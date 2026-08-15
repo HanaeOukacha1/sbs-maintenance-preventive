@@ -31,6 +31,8 @@ class EquipementCreate(BaseModel):
     cpu: Optional[str] = None
     ram: Optional[str] = None
     disque_dur: Optional[str] = None
+    disque_c: Optional[str] = None
+    disque_d: Optional[str] = None
     systeme_exploitation: Optional[str] = None
     stockage_utilise: Optional[str] = None
     antivirus: Optional[str] = None
@@ -69,6 +71,8 @@ class EquipementUpdate(BaseModel):
     cpu: Optional[str] = None
     ram: Optional[str] = None
     disque_dur: Optional[str] = None
+    disque_c: Optional[str] = None
+    disque_d: Optional[str] = None
     systeme_exploitation: Optional[str] = None
     stockage_utilise: Optional[str] = None
     antivirus: Optional[str] = None
@@ -110,6 +114,8 @@ class EquipementResponse(BaseModel):
     cpu: Optional[str] = None
     ram: Optional[str] = None
     disque_dur: Optional[str] = None
+    disque_c: Optional[str] = None
+    disque_d: Optional[str] = None
     systeme_exploitation: Optional[str] = None
     stockage_utilise: Optional[str] = None
     antivirus: Optional[str] = None

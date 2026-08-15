@@ -115,15 +115,16 @@ export default function MissionDetailScreen() {
     const rows = db.getAllSync(sql, params) as Equipement[];
     
     // Charger aussi les interventions locales pour voir si c'est "Terminé"
-    const saved = db.getAllSync('SELECT equipement_id, reponses, equipement_hors_inventaire FROM interventions WHERE mission_id = ?', [mission.id]);
+    const saved = db.getAllSync('SELECT equipement_id, reponses FROM interventions WHERE mission_id = ? ORDER BY id ASC', [mission.id]);
     const savedMap: Record<number, any> = {};
     saved.forEach((s: any) => {
+      // On garde la dernière entrée (la plus récente) pour chaque équipement
       if (s.equipement_id) {
         try { savedMap[s.equipement_id] = JSON.parse(s.reponses || '{}'); } catch {}
       }
     });
 
-    const enriched = rows.map(r => ({ ...r, saved_reponses: savedMap[r.id] }));
+    const enriched = rows.map(r => ({ ...r, saved_reponses: savedMap[r.id] || null }));
     setEquipements(enriched);
     setReponses({});
   }, [mission, feuilleActive, saving]); // Recharger après sauvegarde
@@ -143,7 +144,6 @@ export default function MissionDetailScreen() {
 
   const handleSaveModal = (eqData: any, newReponses: any) => {
     if (!mission || !selectedEq) return;
-    setSaving(true);
     try {
       syncService.saveIntervention({
         mission_id: mission.id,
@@ -151,11 +151,12 @@ export default function MissionDetailScreen() {
         feuille: feuilleActive || null,
         reponses: { ...newReponses, equipement_modifie: eqData },
       });
+      setSelectedEq(null);
+      // Forcer le rechargement de la liste temporairement
+      setSaving(true);
+      setTimeout(() => setSaving(false), 50);
     } catch (e: any) {
       Alert.alert('Erreur', e?.message);
-    } finally {
-      setSaving(false);
-      setSelectedEq(null);
     }
   };
 
@@ -192,7 +193,9 @@ export default function MissionDetailScreen() {
           data.capacite_batteries || '',
         ]
       );
-      setSaving(s => !s); // trigger reload de la liste
+      // Forcer le rechargement de la liste temporairement
+      setSaving(true);
+      setTimeout(() => setSaving(false), 50);
       Alert.alert('✅ Ajouté', `"${data.designation || 'Équipement'}" a été ajouté localement.`);
     } catch (e: any) {
       Alert.alert('Erreur', e?.message);
@@ -257,52 +260,60 @@ export default function MissionDetailScreen() {
           style={[styles.saveBtn, { backgroundColor: '#10b981', marginLeft: 4 }]}
           onPress={async () => {
             try {
-              // Charger tous les équipements du site
-              const eqs = db.getAllSync('SELECT * FROM equipements WHERE site_id = ?', [mission.site_id]) as any[];
-              // Charger les interventions locales
-              const interventions = db.getAllSync('SELECT * FROM interventions WHERE mission_id = ?', [mission.id]) as any[];
-              const interventionMap: Record<number, any> = {};
-              interventions.forEach((i: any) => {
-                try { interventionMap[i.equipement_id] = JSON.parse(i.reponses || '{}'); } catch {}
-              });
-
-              // Construire le CSV
-              const escape = (v: any) => '"' + String(v || '').replace(/"/g, '""') + '"';
-              const headers = ['N°', 'Désignation', 'Marque', 'Modèle', 'N° Série', 'Sous-site', 'État', 'Notes', 'Vérifié'];
-              const lines = [headers.map(escape).join(';')];
-
-              eqs.forEach((eq: any) => {
-                const rep = interventionMap[eq.id] || {};
-                const eqMod = rep.equipement_modifie || {};
-                lines.push([
-                  escape(eq.id),
-                  escape(eqMod.designation || eq.designation || eq.famille || eq.type_equipement || ''),
-                  escape(eqMod.marque || eq.marque || ''),
-                  escape(eqMod.modele || eq.modele || ''),
-                  escape(eqMod.numero_serie || eq.numero_serie || ''),
-                  escape(eq.sous_site || ''),
-                  escape(rep.etat_msante || rep.observation || rep.etat || rep.statut || ''),
-                  escape(rep.notes || ''),
-                  escape(Object.keys(rep).length > 0 ? 'OUI' : 'NON'),
-                ].join(';'));
-              });
-
-              const csvContent = '\uFEFF' + lines.join('\n'); // BOM UTF-8 pour Excel
-              const fileUri = FileSystem.documentDirectory + 'Rapport_' + mission.site_nom.replace(/\s/g, '_') + '.csv';
-              await FileSystem.writeAsStringAsync(fileUri, csvContent, { encoding: 'utf8' as any });
-
-              if (await Sharing.isAvailableAsync()) {
-                await Sharing.shareAsync(fileUri, { mimeType: 'text/csv', dialogTitle: 'Rapport CSV - Ouvrir avec Excel' });
-              } else {
-                Alert.alert('Succès', 'Fichier CSV généré.');
+              setSaving(true);
+              
+              // 1. Forcer l'envoi des interventions locales vers le backend avant l'export
+              try {
+                await syncService.uploadEveningData();
+              } catch (e) {
+                console.log("Erreur de sync pré-export:", e);
               }
+
+              // 2. Appel à l'API backend pour générer le rapport (Word pour ADM/ANCFCC, Excel pour les autres)
+              const response = await api.get(`/missions/${mission.id}/export`, {
+                responseType: 'blob',
+              });
+
+              // Déterminer l'extension selon le Content-Type retourné
+              const contentType = response.headers?.['content-type'] || '';
+              let ext = 'xlsx';
+              let mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+              
+              if (contentType.includes('wordprocessingml') || contentType.includes('msword')) {
+                ext = 'docx';
+                mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+              } else if (contentType.includes('pdf')) {
+                ext = 'pdf';
+                mimeType = 'application/pdf';
+              }
+
+              const fileName = `Rapport_${mission.site_nom.replace(/\s/g, '_')}.${ext}`;
+              const fileUri = FileSystem.documentDirectory + fileName;
+
+              // Convertir le blob en base64 et sauvegarder
+              const blob = response.data;
+              const reader = new FileReader();
+              reader.onload = async () => {
+                const base64 = (reader.result as string).split(',')[1];
+                await FileSystem.writeAsStringAsync(fileUri, base64, {
+                  encoding: FileSystem.EncodingType.Base64,
+                });
+                if (await Sharing.isAvailableAsync()) {
+                  await Sharing.shareAsync(fileUri, { mimeType, dialogTitle: 'Rapport d\'intervention' });
+                } else {
+                  Alert.alert('Succès', `Fichier ${ext.toUpperCase()} généré.`);
+                }
+              };
+              reader.readAsDataURL(blob);
             } catch(e: any) {
-              Alert.alert('Erreur', 'Génération échouée : ' + e?.message);
+              Alert.alert('Erreur', 'Génération du rapport échouée : ' + (e?.message || 'Vérifiez la connexion au serveur'));
+            } finally {
+              setSaving(false);
             }
           }}
         >
           <Download color="#fff" size={16} />
-          <Text style={[styles.saveBtnText, { fontSize: 12 }]}> Excel</Text>
+          <Text style={[styles.saveBtnText, { fontSize: 12 }]}>Rapport</Text>
         </TouchableOpacity>
       </View>
 
@@ -368,7 +379,8 @@ export default function MissionDetailScreen() {
                     reponses: { observation: 'BON' },
                   });
                   setSearch('');
-                  setSaving(!saving); // trigger reload
+                  setSaving(true);
+                  setTimeout(() => setSaving(false), 50);
                 }
               );
             }}
@@ -398,19 +410,29 @@ export default function MissionDetailScreen() {
           return (
             <TouchableOpacity 
               key={eq.id} 
-              style={[styles.eqItem, search.length > 0 && styles.eqItemHighlighted]}
+              style={[
+                styles.eqItem,
+                isDone && styles.eqItemDone,
+                search.length > 0 && styles.eqItemHighlighted
+              ]}
               onPress={() => setSelectedEq(eq)}
             >
               <View style={styles.eqItemLeft}>
                 <View style={[styles.statusDot, isDone ? styles.statusDotDone : styles.statusDotPending]} />
-                <View>
+                <View style={{ flex: 1 }}>
                   <Text style={styles.eqItemDesig}>{idx + 1}. {desig}</Text>
                   <Text style={styles.eqItemNom}>{nom}</Text>
                   {eq.numero_serie ? <Text style={styles.eqItemMeta}>S/N: {eq.numero_serie}</Text> : null}
                   {eq.affectation || eq.utilisateur_nom ? <Text style={styles.eqItemMeta}>👤 {eq.affectation || eq.utilisateur_nom}</Text> : null}
+                  {isDone && (
+                    <View style={styles.doneBadge}>
+                      <CheckCircle2 color="#10b981" size={12} />
+                      <Text style={styles.doneBadgeText}>Diagnostiqué</Text>
+                    </View>
+                  )}
                 </View>
               </View>
-              <ChevronRight color="#cbd5e1" size={20} />
+              <ChevronRight color={isDone ? '#10b981' : '#cbd5e1'} size={20} />
             </TouchableOpacity>
           );
         })}
@@ -536,14 +558,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff', borderRadius: 12, marginBottom: 10, padding: 14,
     borderWidth: 1, borderColor: '#e2e8f0',
   },
+  eqItemDone: {
+    borderColor: '#10b981',
+    backgroundColor: '#f0fdf4',
+  },
   eqItemHighlighted: { borderColor: '#22b5d8', borderWidth: 1.5 },
   eqItemLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   statusDot: { width: 12, height: 12, borderRadius: 6 },
-  statusDotPending: { backgroundColor: '#cbd5e1' }, // gris par défaut (à faire)
-  statusDotDone: { backgroundColor: '#10b981' }, // vert (terminé)
+  statusDotPending: { backgroundColor: '#cbd5e1' },
+  statusDotDone: { backgroundColor: '#10b981' },
   eqItemDesig: { fontSize: 12, fontWeight: '700', color: '#22b5d8', textTransform: 'uppercase' },
   eqItemNom: { fontSize: 15, fontWeight: '600', color: '#0f172a', marginTop: 2 },
   eqItemMeta: { fontSize: 13, color: '#64748b', marginTop: 2, fontFamily: 'monospace' },
+  doneBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6 },
+  doneBadgeText: { fontSize: 12, fontWeight: '600', color: '#10b981' },
 
   notFoundBox: {
     backgroundColor: '#fef3c7', borderRadius: 12, padding: 16,

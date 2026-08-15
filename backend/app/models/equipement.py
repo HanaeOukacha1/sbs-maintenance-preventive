@@ -89,7 +89,9 @@ class Equipement(Base):
     # ------------------------------------------------------------------
     cpu = Column(String(200), nullable=True)
     ram = Column(String(100), nullable=True)
-    disque_dur = Column(String(150), nullable=True)
+    disque_dur = Column(String(150), nullable=True)   # Disque C (ou disque unique)
+    disque_c = Column(String(150), nullable=True)      # ADM : Disque C spécifique
+    disque_d = Column(String(150), nullable=True)      # ADM : Disque D
     systeme_exploitation = Column(String(150), nullable=True)
     stockage_utilise = Column(String(100), nullable=True)  # Espace disque utilisé (AMEE Rabat PC)
     antivirus = Column(String(100), nullable=True)

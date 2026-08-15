@@ -105,7 +105,8 @@ const Sidebar = () => {
 
         .nav-item {
           padding: 0.75rem 1rem;
-          border-radius: 6px;
+          border-left: 3px solid transparent;
+          border-radius: 0 6px 6px 0;
           color: var(--text-muted);
           transition: all var(--transition-fast);
           font-weight: 500;
@@ -114,12 +115,13 @@ const Sidebar = () => {
 
         .nav-item:hover {
           color: var(--text-dark);
-          background-color: rgba(0,0,0,0.03);
+          background-color: var(--bg-hover);
         }
 
         .nav-item.active {
           color: var(--primary);
-          background-color: var(--primary-light);
+          background-color: transparent;
+          border-left-color: var(--primary);
         }
 
         .icon-wrapper {

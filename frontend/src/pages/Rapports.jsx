@@ -56,13 +56,17 @@ const Rapports = () => {
     try { return JSON.parse(rep); } catch { return null; }
   };
 
-  const getStatutIcon = (rep) => {
-    const r = parseReponses(rep);
-    if (!r) return <span className="text-muted">—</span>;
-    const vals = Object.values(r);
-    const allOk = vals.every(v => ['OK', 'BON', 'oui', 'Oui'].includes(v));
-    if (allOk) return <span className="badge" style={{ backgroundColor: '#dcfce7', color: '#16a34a' }}>✅ Bon état</span>;
-    return <span className="badge" style={{ backgroundColor: '#fee2e2', color: '#dc2626' }}>⚠️ Problème</span>;
+  const getStatutIcon = (reponsesJson) => {
+    const rep = parseReponses(reponsesJson);
+    if (!rep) return <span className="badge" style={{ backgroundColor: 'var(--bg-app)', color: 'var(--text-muted)' }}>N/A</span>;
+    
+    let allOk = true;
+    for (const val of Object.values(rep)) {
+      if (['Non', 'NON', 'non'].includes(val)) allOk = false;
+    }
+    
+    if (allOk) return <span className="badge success" style={{ color: 'var(--success)' }}>Bon état</span>;
+    return <span className="badge danger" style={{ color: 'var(--danger)' }}>Problème</span>;
   };
 
   return (
@@ -154,24 +158,24 @@ const Rapports = () => {
 
               {/* Détail des réponses */}
               {isOpen && (
-                <div style={{ borderTop: '1px solid var(--border-light)', padding: '1rem 1.5rem', backgroundColor: '#f8fafc' }}>
+                <div style={{ borderTop: '1px solid var(--border-light)', padding: '1rem 1.5rem', backgroundColor: 'var(--bg-hover)' }}>
                   {reponses ? (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem' }}>
                       {Object.entries(reponses).map(([key, val]) => {
                         const isOk = ['OK', 'BON', 'oui', 'Oui'].includes(val);
                         const isNon = ['Non', 'NON', 'non'].includes(val);
                         return (
-                          <div key={key} style={{ backgroundColor: '#fff', borderRadius: 8, padding: '0.75rem', border: '1px solid var(--border-light)' }}>
+                          <div key={key} style={{ backgroundColor: 'var(--bg-panel)', borderRadius: 8, padding: '0.75rem', border: '1px solid var(--border-light)' }}>
                             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>
                               {key.replace(/_/g, ' ')}
                             </div>
                             <div className="d-flex items-center gap-2">
-                              {isOk && <CheckCircle2 size={16} color="#16a34a" />}
-                              {isNon && <XCircle size={16} color="#dc2626" />}
-                              {!isOk && !isNon && <Clock size={16} color="#94a3b8" />}
+                              {isOk && <CheckCircle2 size={16} color="var(--success)" />}
+                              {isNon && <XCircle size={16} color="var(--danger)" />}
+                              {!isOk && !isNon && <Clock size={16} color="var(--text-muted)" />}
                               <span style={{
                                 fontWeight: 600,
-                                color: isOk ? '#16a34a' : isNon ? '#dc2626' : 'var(--text-dark)',
+                                color: isOk ? 'var(--success)' : isNon ? 'var(--danger)' : 'var(--text-dark)',
                                 fontSize: '0.875rem',
                               }}>
                                 {String(val)}
@@ -187,7 +191,7 @@ const Rapports = () => {
 
                   {/* Observation texte libre */}
                   {inv.observations && (
-                    <div style={{ marginTop: '1rem', backgroundColor: '#fff', borderRadius: 8, padding: '0.75rem', border: '1px solid var(--border-light)' }}>
+                    <div style={{ marginTop: '1rem', backgroundColor: 'var(--bg-panel)', borderRadius: 8, padding: '0.75rem', border: '1px solid var(--border-light)' }}>
                       <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: 4 }}>OBSERVATION</div>
                       <p style={{ fontSize: '0.875rem', color: 'var(--text-dark)', margin: 0 }}>{inv.observations}</p>
                     </div>

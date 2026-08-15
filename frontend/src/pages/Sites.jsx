@@ -16,7 +16,8 @@ const Sites = () => {
   // Modale Marché
   const [isMarcheModalOpen, setIsMarcheModalOpen] = useState(false);
   const [isSubmittingMarche, setIsSubmittingMarche] = useState(false);
-  const [marcheData, setMarcheData] = useState({ nom: '', description: '' });
+  const [marcheData, setMarcheData] = useState({ nom: '', description: '', numero: '', informations_entete: '' });
+  const [logoFile, setLogoFile] = useState(null);
   const [marcheErrors, setMarcheErrors] = useState({});
   const [marcheGlobalError, setMarcheGlobalError] = useState('');
 
@@ -77,9 +78,20 @@ const Sites = () => {
       setIsSubmittingMarche(true);
       setMarcheGlobalError('');
       const payload = { ...marcheData, client: marcheData.nom };
-      const response = await api.post('/marches/', payload);
+      let response = await api.post('/marches/', payload);
+      
+      // Upload logo si sélectionné
+      if (logoFile) {
+        const formData = new FormData();
+        formData.append('file', logoFile);
+        response = await api.post(`/marches/${response.data.id}/logo`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      }
+
       setMarches([...marches, response.data]);
-      setMarcheData({ nom: '', description: '' });
+      setMarcheData({ nom: '', description: '', numero: '', informations_entete: '' });
+      setLogoFile(null);
       setIsMarcheModalOpen(false);
     } catch (error) {
       setMarcheGlobalError(error.response?.data?.detail || "Erreur lors de la création.");
@@ -194,7 +206,7 @@ const Sites = () => {
           {selectedMarche ? (
             <div className="card h-full d-flex flex-col animate-fade-in">
               {/* Header du marché sélectionné */}
-              <div className="p-4 border-bottom" style={{ backgroundColor: '#f8fafc', borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }}>
+              <div className="p-4 border-bottom" style={{ backgroundColor: 'var(--bg-hover)', borderTopLeftRadius: '12px', borderTopRightRadius: '12px' }}>
                 <div className="d-flex justify-between items-center">
                   <div>
                     <span className="badge cyan mb-2">Marché Sélectionné</span>
@@ -314,7 +326,7 @@ const Sites = () => {
         }
 
         .marche-item:last-child { border-bottom: none; }
-        .marche-item:hover { background-color: #f8fafc; }
+        .marche-item:hover { background-color: var(--bg-hover); }
         
         .marche-item.active {
           background-color: var(--primary-light);
@@ -333,7 +345,7 @@ const Sites = () => {
           width: 40px;
           height: 40px;
           border-radius: 8px;
-          background-color: #f1f5f9;
+          background-color: var(--bg-app);
           color: var(--text-muted);
           display: flex;
           align-items: center;
@@ -371,7 +383,7 @@ const Sites = () => {
           width: 100px;
           height: 100px;
           border-radius: 50%;
-          background-color: #f8fafc;
+          background-color: var(--bg-hover);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -418,6 +430,37 @@ const Sites = () => {
               onChange={(e) => setMarcheData({...marcheData, description: e.target.value})}
               placeholder="Détails du contrat, durée, etc."
             ></textarea>
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label">Numéro du Marché (Optionnel)</label>
+            <input 
+              type="text" className="form-input" 
+              value={marcheData.numero} 
+              onChange={(e) => setMarcheData({...marcheData, numero: e.target.value})}
+              placeholder="Ex: M0103/25"
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Informations d'en-tête (Optionnel)</label>
+            <textarea 
+              className="form-input" 
+              rows="2"
+              value={marcheData.informations_entete} 
+              onChange={(e) => setMarcheData({...marcheData, informations_entete: e.target.value})}
+              placeholder="Ex: Adresse, notes d'en-tête..."
+            ></textarea>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Logo du Client (Optionnel)</label>
+            <input 
+              type="file" className="form-input" 
+              accept="image/*"
+              onChange={(e) => setLogoFile(e.target.files[0])}
+            />
+            {logoFile && <div className="text-muted mt-1" style={{fontSize: '0.75rem'}}>Fichier sélectionné: {logoFile.name}</div>}
           </div>
 
           <div className="d-flex justify-end gap-2 mt-4 pt-4 border-top">

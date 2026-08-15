@@ -13,7 +13,7 @@ const TYPE_COLORS = {
   PHOTOCOPIEUR: { bg: '#fef9c3', color: '#ca8a04' },
   FAX:          { bg: '#e0e7ff', color: '#4338ca' },
   AIO:          { bg: '#d1fae5', color: '#059669' },
-  AUTRE:        { bg: '#f1f5f9', color: '#64748b' },
+  AUTRE:        { bg: 'var(--bg-app)', color: 'var(--text-muted)' },
 };
 
 const Equipements = () => {
@@ -127,7 +127,7 @@ const Equipements = () => {
                 <th>Type</th>
                 <th>Désignation / Nom</th>
                 <th>Marque & Modèle</th>
-                <th>N° Série</th>
+                <th className="text-right">N° Série</th>
                 <th>Site</th>
                 <th>Marché</th>
                 <th>Sous-site</th>
@@ -156,8 +156,8 @@ const Equipements = () => {
                       <div>{eq.marque || '—'}</div>
                       <div className="text-muted" style={{ fontSize: '0.75rem' }}>{eq.modele || ''}</div>
                     </td>
-                    <td>
-                      <span style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    <td className="text-right">
+                      <span className="font-mono text-muted">
                         {eq.numero_serie || 'N/A'}
                       </span>
                     </td>

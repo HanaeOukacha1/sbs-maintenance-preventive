@@ -217,10 +217,15 @@ def exporter_rapport_mission(
 
     try:
         buffer, mime_type, filename = exporter_mission(mission, interventions, equipements)
+        
+        import re
+        # Sanitize filename to avoid HTTP header encoding errors
+        safe_filename = re.sub(r'[^A-Za-z0-9_\-\.]', '_', filename)
+        
         return StreamingResponse(
             buffer,
             media_type=mime_type,
-            headers={"Content-Disposition": f"attachment; filename={filename}"}
+            headers={"Content-Disposition": f"attachment; filename={safe_filename}"}
         )
     except Exception as e:
         raise HTTPException(

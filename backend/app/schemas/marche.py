@@ -7,6 +7,8 @@ class MarcheCreate(BaseModel):
     nom: str
     client: str
     description: str | None = None
+    numero: str | None = None
+    informations_entete: str | None = None
 
 
 class MarcheUpdate(BaseModel):
@@ -15,6 +17,8 @@ class MarcheUpdate(BaseModel):
     client: str | None = None
     description: str | None = None
     is_active: bool | None = None
+    numero: str | None = None
+    informations_entete: str | None = None
 
 
 class MarcheResponse(BaseModel):
@@ -24,6 +28,9 @@ class MarcheResponse(BaseModel):
     client: str
     description: str | None = None
     is_active: bool
+    numero: str | None = None
+    informations_entete: str | None = None
+    logo_url: str | None = None
     created_at: datetime | None = None
 
     class Config:
