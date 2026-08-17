@@ -3,7 +3,7 @@ import {
   View, Text, StyleSheet, TouchableOpacity,
   ScrollView, Alert, ActivityIndicator, RefreshControl,
 } from 'react-native';
-import { RefreshCw, MapPin, ChevronRight, Calendar, Building2, CheckCircle2, Clock } from 'lucide-react-native';
+import { RefreshCw, MapPin, ChevronRight, Calendar, Building2, CheckCircle2, Clock, UploadCloud } from 'lucide-react-native';
 import { Link, useFocusEffect } from 'expo-router';
 import syncService from '../../services/syncService';
 import db from '../../services/dbService';
@@ -17,7 +17,8 @@ const STATUS_COLOR: Record<string, { bg: string; text: string; label: string }> 
 
 export default function MissionsScreen() {
   const [missions, setMissions] = useState<any[]>([]);
-  const [syncing, setSyncing] = useState(false);
+  const [syncingMatin, setSyncingMatin] = useState(false);
+  const [syncingSoir, setSyncingSoir] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
 
   const charger = useCallback(() => {
@@ -35,7 +36,7 @@ export default function MissionsScreen() {
   useFocusEffect(useCallback(() => { charger(); }, [charger]));
 
   const synchroniser = async () => {
-    setSyncing(true);
+    setSyncingMatin(true);
     try {
       const result = await syncService.downloadMorningData();
       charger();
@@ -43,24 +44,24 @@ export default function MissionsScreen() {
     } catch (e: any) {
       Alert.alert('Erreur', e?.message || 'Synchronisation échouée');
     } finally {
-      setSyncing(false);
+      setSyncingMatin(false);
     }
   };
 
   const uploaderSoir = async () => {
     if (pendingCount === 0) {
-      Alert.alert('Info', 'Aucune donnée en attente.');
+      Alert.alert('Info', 'Aucune donnée en attente de synchronisation.');
       return;
     }
-    setSyncing(true);
+    setSyncingSoir(true);
     try {
       const result = await syncService.uploadEveningData();
       charger();
-      Alert.alert('Envoyé', `${result.uploaded} intervention(s) et statuts mis à jour`);
+      Alert.alert('Succès', `${result.uploaded} élément(s) synchronisé(s) vers le serveur.`);
     } catch (e: any) {
-      Alert.alert('Erreur', e?.message || 'Envoi échoué');
+      Alert.alert('Erreur', e?.message || 'Synchronisation échouée');
     } finally {
-      setSyncing(false);
+      setSyncingSoir(false);
     }
   };
 
@@ -74,18 +75,19 @@ export default function MissionsScreen() {
         <Text style={styles.title}>Mes Missions</Text>
 
         <View style={styles.btnRow}>
-          <TouchableOpacity style={styles.btnSync} onPress={synchroniser} disabled={syncing}>
-            {syncing ? <ActivityIndicator color="#fff" size={16} /> : <RefreshCw color="#fff" size={16} />}
+          <TouchableOpacity style={styles.btnSync} onPress={synchroniser} disabled={syncingMatin || syncingSoir}>
+            {syncingMatin ? <ActivityIndicator color="#fff" size={16} /> : <RefreshCw color="#fff" size={16} />}
             <Text style={styles.btnText}>Sync matin</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.btnUpload, pendingCount > 0 && styles.btnUploadActive]}
             onPress={uploaderSoir}
-            disabled={syncing}
+            disabled={syncingMatin || syncingSoir}
           >
-            <Text style={styles.btnText}>
-              Synchroniser{pendingCount > 0 ? ` (${pendingCount})` : ''}
+            {syncingSoir ? <ActivityIndicator color={pendingCount > 0 ? "#fff" : "#64748b"} size={16} /> : <UploadCloud color={pendingCount > 0 ? "#fff" : "#64748b"} size={16} />}
+            <Text style={[styles.btnText, pendingCount === 0 && { color: '#64748b' }]}>
+              Synchro finale{pendingCount > 0 ? ` (${pendingCount})` : ''}
             </Text>
           </TouchableOpacity>
         </View>

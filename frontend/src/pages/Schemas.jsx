@@ -90,6 +90,10 @@ const Schemas = () => {
     const updated = [...schemaFields];
     if (key === 'options') {
       updated[index][key] = value.split(',').map(s => s.trim()).filter(s => s);
+    } else if (key === 'label') {
+      updated[index][key] = value;
+      // Auto-generate technical key behind the scenes so the user doesn't have to
+      updated[index]['key'] = value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
     } else {
       updated[index][key] = value;
     }
@@ -218,7 +222,9 @@ const Schemas = () => {
                 type="text" className="form-input" required
                 value={formData.type_equipement} 
                 onChange={e => setFormData({...formData, type_equipement: e.target.value})}
+                placeholder="Ex: GLOBAL, EXTINCTEUR, GROUPE_ELECTROGENE..."
               />
+              <span style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>Détermine à quel onglet ce formulaire s'applique.</span>
             </div>
           </div>
           
@@ -230,11 +236,12 @@ const Schemas = () => {
                 value={formData.marche_id}
                 onChange={e => setFormData({...formData, marche_id: e.target.value, site_id: ''})}
               >
-                <option value="">Tous les marchés / Par défaut</option>
+                <option value="">-- Applicable à TOUS les marchés --</option>
                 {marches.map(m => (
                   <option key={m.id} value={m.id}>{m.nom}</option>
                 ))}
               </select>
+              <span style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>Laissez vide pour un formulaire standard global.</span>
             </div>
             <div className="form-group flex-1">
               <label className="form-label">Site cible (optionnel)</label>
@@ -244,11 +251,12 @@ const Schemas = () => {
                 onChange={e => setFormData({...formData, site_id: e.target.value})}
                 disabled={!formData.marche_id}
               >
-                <option value="">Tous les sites du marché</option>
+                <option value="">-- Applicable à TOUS les sites du marché --</option>
                 {sites.filter(s => s.marche_id == formData.marche_id).map(s => (
                   <option key={s.id} value={s.id}>{s.nom}</option>
                 ))}
               </select>
+              <span style={{fontSize: '0.7rem', color: 'var(--text-muted)'}}>Nécessite d'abord de sélectionner un marché.</span>
             </div>
           </div>
           
@@ -287,23 +295,14 @@ const Schemas = () => {
                       </button>
                     </div>
                     
-                    <div className="d-flex gap-3 mb-2">
-                      <div className="form-group flex-1" style={{ marginBottom: 0 }}>
-                        <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Clé technique (unique)</label>
-                        <input 
-                          type="text" className="form-input" style={{ padding: '6px 12px' }}
-                          value={field.key || ''} 
-                          onChange={e => updateField(index, 'key', e.target.value)}
-                        />
-                      </div>
-                      <div className="form-group flex-1" style={{ marginBottom: 0 }}>
-                        <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Label affiché à l'utilisateur</label>
-                        <input 
-                          type="text" className="form-input" style={{ padding: '6px 12px' }}
-                          value={field.label || ''} 
-                          onChange={e => updateField(index, 'label', e.target.value)}
-                        />
-                      </div>
+                    <div className="form-group mb-2">
+                      <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Question / Label (ex: État de la porte)</label>
+                      <input 
+                        type="text" className="form-input" style={{ padding: '6px 12px' }}
+                        value={field.label || ''} 
+                        onChange={e => updateField(index, 'label', e.target.value)}
+                        placeholder="Ex: État de l'extincteur"
+                      />
                     </div>
                     
                     <div className="form-group" style={{ marginBottom: 0 }}>
