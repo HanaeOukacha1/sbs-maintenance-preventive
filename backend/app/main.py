@@ -35,16 +35,11 @@ app = FastAPI(
 # Expo (localhost:8081) à appeler notre API (localhost:8000)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",   # Frontend React (Vite)
-        "http://localhost:3000",   # Autre port React possible
-        "http://localhost:8081",   # Expo mobile
-        "http://localhost:19000",  # Expo Go
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],           # GET, POST, PUT, DELETE...
-    allow_headers=["*"],           # Authorization, Content-Type...
-    expose_headers=["Content-Disposition"], # Nécessaire pour récupérer le nom du fichier
+    allow_origins=["*"],   # Autorise toutes les origines (réseau local)
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["Content-Disposition"],
 )
 
 # Mount static files for logos

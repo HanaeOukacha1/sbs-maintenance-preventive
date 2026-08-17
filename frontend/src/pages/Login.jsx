@@ -27,7 +27,6 @@ const Login = () => {
       setIsLoading(true);
       setError('');
       const data = await authService.login(formData.email, formData.password);
-      console.log("Connecté avec succès:", data.user.nom);
       navigate('/');
     } catch (err) {
       setError(err.message);
@@ -77,7 +76,7 @@ const Login = () => {
                   name="email"
                   type="email"
                   className="form-input with-icon"
-                  placeholder="technicien@sbs.ma"
+                  placeholder="admin@sbs.ma"
                   value={formData.email}
                   onChange={handleChange}
                   disabled={isLoading}
